@@ -107,8 +107,12 @@ body {
 /* ─── The Door ───────────────────────────────────────────────────────────── */
 .door-frame {
   position: relative;
-  border: 1px solid rgba(100, 160, 220, 0.08);
-  background: linear-gradient(180deg, #18182A 0%, #111119 100%);
+  border: 1px solid rgba(100, 160, 220, 0.22);
+  box-shadow:
+    0 0 60px rgba(30, 50, 90, 0.5),
+    inset 0 0 40px rgba(10, 20, 40, 0.6),
+    0 0 0 1px rgba(100, 160, 220, 0.04);
+  background: linear-gradient(180deg, #1A1A2E 0%, #0D0D1A 100%);
   border-radius: 2px;
   overflow: hidden;
 }
@@ -188,9 +192,9 @@ body {
 .mirror {
   flex: 1;
   background:
-    linear-gradient(170deg, rgba(20, 50, 80, 0.15) 0%, rgba(10, 20, 40, 0.05) 100%),
-    var(--color-glass);
-  border: 1px solid var(--color-glass-edge);
+    radial-gradient(ellipse at 50% 0%, rgba(60, 100, 160, 0.08) 0%, transparent 55%),
+    #08080F;
+  border: 1px solid rgba(80, 120, 180, 0.18);
   border-radius: 4px;
   box-shadow:
     0 0 40px rgba(34, 90, 140, 0.08),
@@ -232,6 +236,8 @@ body {
   padding: 32px;
   display: flex;
   flex-direction: column;
+  align-items: center;
+  justify-content: center;
   gap: 24px;
   height: 100%;
   overflow-y: auto;
@@ -376,19 +382,20 @@ body {
 /* ─── Payoff Matrix ──────────────────────────────────────────────────────── */
 .payoff-matrix {
   display: grid;
-  grid-template-columns: 40px 1fr 1fr;
-  grid-template-rows: 24px 1fr 1fr;
-  gap: 4px;
+  grid-template-columns: 52px 1fr 1fr;
+  grid-template-rows: 28px 1fr 1fr;
+  gap: 6px;
   font-family: 'IBM Plex Mono', monospace;
+  width: 100%;
 }
 
 .matrix-cell {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 10px 8px;
+  padding: 20px 8px;
   border-radius: 3px;
-  font-size: 13px;
+  font-size: 16px;
   font-weight: 500;
 }
 
@@ -602,6 +609,136 @@ body {
 .result-stagger-0 { animation: fadeIn 200ms 0ms   cubic-bezier(0.25, 0.1, 0.25, 1) both; }
 .result-stagger-1 { animation: fadeIn 200ms 100ms cubic-bezier(0.25, 0.1, 0.25, 1) both; }
 .result-stagger-2 { animation: fadeIn 200ms 200ms cubic-bezier(0.25, 0.1, 0.25, 1) both; }
+
+/* ─── Character Silhouettes ──────────────────────────────────────────────── */
+.mirror-intro {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  padding: 32px;
+  gap: 24px;
+}
+
+.silhouette {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+  opacity: 0.35;
+  transform-origin: bottom center;
+}
+
+.silhouette-head {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: var(--color-text-ghost);
+}
+
+.silhouette-shoulders {
+  width: 80px;
+  height: 20px;
+  background: var(--color-text-ghost);
+  clip-path: polygon(10% 0%, 90% 0%, 100% 100%, 0% 100%);
+  margin-top: -2px;
+}
+
+.silhouette-torso {
+  width: 60px;
+  height: 60px;
+  background: var(--color-text-ghost);
+}
+
+/* Pose variants */
+.silhouette--slouched .silhouette-head    { transform: translateX(-4px) rotate(-5deg); }
+.silhouette--slouched .silhouette-torso   { transform: rotate(-3deg); }
+.silhouette--rigid    .silhouette-head    { transform: none; }
+.silhouette--rigid    .silhouette-torso   { transform: none; }
+.silhouette--mirrored .silhouette-head    { transform: none; }
+.silhouette--still    .silhouette-head    { transform: none; }
+.silhouette--fidgety  .silhouette-torso   { animation: jitter 0.3s steps(2) infinite; }
+.silhouette--computing .silhouette-head   { animation: computing-pulse 1.5s ease-in-out infinite; }
+.silhouette--computing .silhouette-torso  { animation: computing-pulse 1.5s 0.3s ease-in-out infinite; }
+
+.silhouette-breathing {
+  animation: breathe 3s ease-in-out infinite;
+  transform-origin: bottom center;
+}
+
+/* Silhouette keyframes */
+@keyframes breathe {
+  0%, 100% { transform: scaleY(1); }
+  50%       { transform: scaleY(1.015); }
+}
+@keyframes jitter {
+  0%   { transform: translate(0, 0); }
+  25%  { transform: translate(-1px, 0); }
+  75%  { transform: translate(1px, 0); }
+  100% { transform: translate(0, 0); }
+}
+@keyframes computing-pulse {
+  0%, 100% { opacity: 0.3; }
+  50%       { opacity: 0.55; }
+}
+
+/* ─── Anticipation Overlay ───────────────────────────────────────────────── */
+.anticipation-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(7, 7, 11, 0.75);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  z-index: 7;
+  border-radius: 4px;
+  overflow: hidden;
+}
+/* Horizontal scan bar */
+.anticipation-overlay::before {
+  content: '';
+  position: absolute;
+  left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent 0%, rgba(80, 150, 220, 0.6) 30%, rgba(80, 150, 220, 0.9) 50%, rgba(80, 150, 220, 0.6) 70%, transparent 100%);
+  animation: scan-line 1.2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+.anticipation-dots {
+  display: flex;
+  gap: 10px;
+}
+.anticipation-dots span {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: rgba(80, 150, 220, 0.9);
+  animation: dot-wave 1.2s ease-in-out infinite;
+}
+.anticipation-dots span:nth-child(2) { animation-delay: 0.15s; }
+.anticipation-dots span:nth-child(3) { animation-delay: 0.3s; }
+.anticipation-label {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.25em;
+  color: rgba(80, 150, 220, 0.7);
+  text-transform: uppercase;
+  animation: label-pulse 1.2s ease-in-out infinite;
+}
+@keyframes scan-line {
+  0%   { top: 0%; }
+  100% { top: 100%; }
+}
+@keyframes dot-wave {
+  0%, 100% { opacity: 0.2; transform: scaleY(1); }
+  50%       { opacity: 1;   transform: scaleY(1.5); }
+}
+@keyframes label-pulse {
+  0%, 100% { opacity: 0.4; }
+  50%       { opacity: 1; }
+}
 
 /* ─── Responsive ─────────────────────────────────────────────────────────── */
 @media (min-width: 480px) {

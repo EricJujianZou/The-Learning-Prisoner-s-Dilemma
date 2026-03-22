@@ -1,17 +1,8 @@
 import { useState, useEffect, useRef } from 'react';
+import { motion } from 'framer-motion';
 import Narrator from '../components/Narrator.jsx';
 import QTableReveal from '../components/QTableReveal.jsx';
-
-const WIN_LINES = [
-  "You figured it out. Most don't.",
-  "Clean. Next.",
-  "That was the easy part.",
-];
-const LOSE_LINES = [
-  "Hm. Try again.",
-  "It's not random. Think.",
-  "You're smarter than that. Probably.",
-];
+import { NARRATOR, CHARACTERS } from '../config/characters.js';
 
 function useTypewriter(text, speed = 40) {
   const [displayed, setDisplayed] = useState('');
@@ -46,15 +37,10 @@ export default function PostLevel({ analysisData, onRetry, onNextLevel }) {
 
   const [showQTable, setShowQTable] = useState(false);
 
-  // Pick chungus comment once on mount
   const chungusLine = useRef(
-    isRL
-      ? won
-        ? 'It studied you and you still won. Interesting.'
-        : 'It learned faster than you adapted. That happens.'
-      : won
-      ? WIN_LINES[Math.floor(Math.random() * WIN_LINES.length)]
-      : LOSE_LINES[Math.floor(Math.random() * LOSE_LINES.length)]
+    won
+      ? (isRL ? CHARACTERS.machine.defeated.text : opponent?.defeated?.text ?? '')
+      : (isRL ? NARRATOR.rlLose : NARRATOR.lose[Math.floor(Math.random() * NARRATOR.lose.length)])
   ).current;
 
   const displayName = isRL ? 'THE MACHINE' : opponent?.levelName ?? '';
@@ -62,7 +48,7 @@ export default function PostLevel({ analysisData, onRetry, onNextLevel }) {
 
   const explanation = isRL
     ? `Converged toward: ${rlStrategy}`
-    : opponent?.explanation ?? '';
+    : opponent?.strategyDescription ?? opponent?.explanation ?? '';
 
   let scoreText;
   if (isRL) {
@@ -73,22 +59,29 @@ export default function PostLevel({ analysisData, onRetry, onNextLevel }) {
     scoreText = `You scored ${playerScore}. Needed ${threshold?.value} to pass.`;
   }
 
+  const fadeUp = (delay = 0) => ({
+    initial: { opacity: 0, y: 8 },
+    animate: { opacity: 1, y: 0 },
+    transition: { duration: 0.3, delay, ease: [0.25, 0.1, 0.25, 1] },
+  });
+
   return (
-    <div className="mirror-analysis animate-fade-in">
+    <div className="mirror-analysis">
       {/* Win / Lose */}
-      <div
+      <motion.div
         className="font-display font-bold uppercase text-center"
         style={{
           fontSize: '22px',
           letterSpacing: '0.04em',
           color: won ? 'var(--color-win)' : 'var(--color-lose)',
         }}
+        {...fadeUp(0)}
       >
-        {won ? 'CLEAR' : 'FAILED'}
-      </div>
+        {won ? 'YOU WON' : 'YOU LOST'}
+      </motion.div>
 
       {/* Strategy name — types in */}
-      <div>
+      <motion.div {...fadeUp(0.1)}>
         <div
           className="strategy-name cursor-blink"
           style={{ color: 'var(--color-text-primary)', minHeight: '28px' }}
@@ -103,16 +96,21 @@ export default function PostLevel({ analysisData, onRetry, onNextLevel }) {
             {explanation}
           </p>
         )}
-      </div>
+      </motion.div>
+
+      {/* Defeated text removed — narrator chungusLine covers this */}
 
       {/* Round history timeline */}
-      <HistoryTimeline history={roundHistory} pivot={pivot} />
+      <motion.div {...fadeUp(0.2)}>
+        <HistoryTimeline history={roundHistory} pivot={pivot} />
+      </motion.div>
 
       {/* RL phase comparison */}
       {isRL && phaseScores && (
-        <div
+        <motion.div
           className="font-mono rounded-sm p-3"
           style={{ background: 'rgba(7,7,11,0.4)', border: '1px solid var(--color-border)', fontSize: '11px', lineHeight: 1.8 }}
+          {...fadeUp(0.25)}
         >
           <div className="text-text-ghost uppercase tracking-widest mb-1" style={{ fontSize: '10px' }}>
             Phase Comparison
@@ -129,25 +127,22 @@ export default function PostLevel({ analysisData, onRetry, onNextLevel }) {
               You <span className="text-text-primary">{phaseScores.phase2Player}</span> — Them <span className="text-text-primary">{phaseScores.phase2Opponent}</span>
             </span>
           </div>
-        </div>
+        </motion.div>
       )}
 
       {/* Score summary */}
-      <p className="font-mono text-text-secondary" style={{ fontSize: '12px' }}>
+      <motion.p className="font-mono text-text-secondary" style={{ fontSize: '12px' }} {...fadeUp(0.3)}>
         {scoreText}
-      </p>
+      </motion.p>
 
       {/* Chungus comment */}
-      <div
-        className="rounded-sm p-3"
-        style={{ background: 'var(--color-chungus-dim)' }}
-      >
-        <Narrator text={chungusLine} />
-      </div>
+      <motion.div className="rounded-sm p-3" style={{ background: 'var(--color-chungus-dim)' }} {...fadeUp(0.35)}>
+        <Narrator text={chungusLine} audio={won ? opponent?.defeated?.audio : undefined} />
+      </motion.div>
 
       {/* Q-table toggle (RL boss only) */}
       {isRL && (
-        <div>
+        <motion.div {...fadeUp(0.4)}>
           <button
             onClick={() => setShowQTable((v) => !v)}
             className="font-mono text-text-ghost underline"
@@ -160,11 +155,11 @@ export default function PostLevel({ analysisData, onRetry, onNextLevel }) {
               <QTableReveal qTable={qTable} visitedStates={visitedStates} />
             </div>
           )}
-        </div>
+        </motion.div>
       )}
 
       {/* Retry / Next */}
-      <div className="flex gap-3 pb-2">
+      <motion.div className="flex gap-3 pb-2" {...fadeUp(0.45)}>
         <button className="analysis-btn analysis-btn--retry" onClick={onRetry}>
           Retry
         </button>
@@ -173,12 +168,12 @@ export default function PostLevel({ analysisData, onRetry, onNextLevel }) {
             {isRL ? 'Leaderboard' : 'Next'}
           </button>
         )}
-      </div>
+      </motion.div>
     </div>
   );
 }
 
-// Inline history timeline component
+// Inline history timeline — 18×18px cells with C/D labels
 function HistoryTimeline({ history, pivot }) {
   return (
     <div>
@@ -189,30 +184,46 @@ function HistoryTimeline({ history, pivot }) {
             className="flex flex-col gap-0.5"
             style={{
               outline: pivot && i + 1 === pivot ? '1px solid rgba(91,95,230,0.5)' : 'none',
-              outlineOffset: '1px',
+              outlineOffset: '2px',
               borderRadius: '2px',
-              padding: pivot && i + 1 === pivot ? '1px' : '0',
             }}
           >
+            {/* Player row */}
             <div
               style={{
                 width: '18px',
-                height: '6px',
+                height: '18px',
                 borderRadius: '2px',
                 background: r.playerMove === 'C' ? 'var(--color-cooperate)' : 'var(--color-defect)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: '9px',
+                fontFamily: "'IBM Plex Mono', monospace",
+                fontWeight: 500,
+                color: '#07070B',
               }}
-            />
+            >
+              {r.playerMove}
+            </div>
+            {/* Opponent row */}
             <div
               style={{
                 width: '18px',
-                height: '6px',
+                height: '18px',
                 borderRadius: '2px',
-                background:
-                  r.opponentMove === 'C'
-                    ? 'rgba(45, 181, 99, 0.4)'
-                    : 'rgba(217, 69, 69, 0.4)',
+                background: r.opponentMove === 'C' ? 'rgba(45,181,99,0.4)' : 'rgba(217,69,69,0.4)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: '9px',
+                fontFamily: "'IBM Plex Mono', monospace",
+                fontWeight: 500,
+                color: 'var(--color-text-secondary)',
               }}
-            />
+            >
+              {r.opponentMove}
+            </div>
           </div>
         ))}
       </div>

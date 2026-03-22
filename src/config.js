@@ -30,7 +30,7 @@ export const QL_CONFIG = {
 // GAME PARAMETERS
 // ─────────────────────────────────────────────────────────────────────────────
 export const GAME_CONFIG = {
-  ROUNDS_STANDARD: 10,
+  ROUNDS_STANDARD: 5,
   ROUNDS_RL: 20,
   // Milliseconds the round result is displayed before auto-advancing.
   RESULT_DISPLAY_MS: 1500,

@@ -23,13 +23,17 @@ export function getNextState(agentMove, playerMove) {
 }
 
 // Epsilon-greedy action selection.
+// Returns { move, wasExploring } so GameRoom can trigger onAgentExplore/Exploit dialogue.
 export function chooseAction(state, qTable, epsilon) {
-  if (Math.random() < epsilon) {
-    return Math.random() < 0.5 ? 'C' : 'D';
+  const wasExploring = Math.random() < epsilon;
+  if (wasExploring) {
+    return { move: Math.random() < 0.5 ? 'C' : 'D', wasExploring: true };
   }
-  if (qTable[state].C > qTable[state].D) return 'C';
-  if (qTable[state].D > qTable[state].C) return 'D';
-  return Math.random() < 0.5 ? 'C' : 'D'; // tie-break randomly
+  let move;
+  if (qTable[state].C > qTable[state].D) move = 'C';
+  else if (qTable[state].D > qTable[state].C) move = 'D';
+  else move = Math.random() < 0.5 ? 'C' : 'D'; // tie-break randomly
+  return { move, wasExploring: false };
 }
 
 // Bellman update: Q(s,a) ← Q(s,a) + α[r + γ·max_a'Q(s',a') - Q(s,a)]

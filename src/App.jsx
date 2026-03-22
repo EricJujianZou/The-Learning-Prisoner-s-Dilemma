@@ -1,5 +1,6 @@
 import { useReducer, useCallback, useState, useEffect } from 'react';
 import { OPPONENTS, getPayoffs, checkWin, shuffleOpponents } from './game/opponents.js';
+import { CHARACTERS } from './config/characters.js';
 import {
   initQTable,
   chooseAction,
@@ -78,7 +79,7 @@ function gameReducer(state, action) {
       const rlState = state.currentRLState;
 
       // Agent picks its action based on current state + epsilon
-      const agentMove = chooseAction(rlState, state.qTable, state.epsilon);
+      const { move: agentMove, wasExploring } = chooseAction(rlState, state.qTable, state.epsilon);
 
       // Payoffs: from player's perspective and agent's perspective
       const playerPayoffs = getPayoffs(move, agentMove);
@@ -90,6 +91,7 @@ function gameReducer(state, action) {
         playerReward: playerPayoffs.player,
         opponentReward: agentPayoffs.player,
         round: state.round,
+        wasExploring,
       };
 
       // Q-table update: agent learns from its own reward
@@ -152,6 +154,7 @@ function gameReducer(state, action) {
           }),
           // RL boss fields
           ...(isRLPhase && {
+            opponent:     CHARACTERS.machine,
             phaseScores:  computePhaseScores(state.roundHistory),
             strategyName: identifyStrategy(state.qTable, state.visitedStates),
             qTable:       state.qTable,

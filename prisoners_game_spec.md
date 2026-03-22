@@ -6,7 +6,7 @@ A browser game where you play the Prisoner's Dilemma against 5 mystery opponents
 
 **One liner:** "Can you outscore an AI that learns how you think?"
 
-**Stack:** Static single page app (React preferred). GitHub + Vercel. No backend. localStorage for session state, `window.storage` API (shared=true) for leaderboard.
+**Stack:** Static single page app (React 18 + Vite 5 + Tailwind CSS 3.4). GitHub + Vercel. No backend. Supabase (anon key, RLS-gated) for shared leaderboard with localStorage fallback. Framer Motion for all React animations. use-sound (wraps howler.js) for all audio feedback. Sound files in `/public/sounds/`.
 
 **Tone:** Minimal, dark, slightly ominous. Interrogation room aesthetic. A narrator called "The Chungus" gives terse commentary between levels.
 
@@ -83,9 +83,9 @@ Level 1 begins immediately.
 
 ### Level Flow (repeated 5 times for hardcoded opponents)
 
-**Pre-level:** The Chungus gives a one-liner introducing the opponent (no strategy name). Text appears on the mirror glass.
+**Pre-level (3 seconds):** The mirror is transparent. A CSS silhouette of the opponent is visible behind the glass. Each character has a distinct pose (slouched, rigid, mirrored, still, fidgety). Character intro quote appears below the silhouette. After 3 seconds, silhouette fades out and payoff matrix fades in.
 
-**Gameplay (10 rounds per level):**
+**Gameplay (5 rounds per level):**
 - Payoff matrix visible on the mirror (always)
 - Round counter above mirror
 - Score comparison (You vs Them) above mirror
@@ -171,28 +171,28 @@ Displayed as a 2x2 grid on the one-way mirror. Green tint for cooperate cells, r
 
 #### Level: "The Wall" — Always Defect
 - **Behavior:** Returns 'D' every round regardless of history.
-- **Win threshold:** Score >= 5
+- **Win threshold:** Score >= 3
 - **Teaches:** You can't cooperate with everyone. Mutual defection is sometimes the only stable outcome.
 - **Chungus pre-level:** "This one has made up its mind. Have you?"
 - **Implementation:** `() => 'D'`
 
 #### Level: "The Mirror" — Tit for Tat
 - **Behavior:** Starts with 'C'. Then copies the player's previous move.
-- **Win threshold:** Score >= 12
+- **Win threshold:** Score >= 6
 - **Teaches:** Reciprocity. Your moves have consequences next round.
 - **Chungus pre-level:** "Whatever you do, it does. Eventually."
 - **Implementation:** `(history) => history.length === 0 ? 'C' : history[history.length - 1].playerMove`
 
 #### Level: "The Grudge" — Grim Trigger
 - **Behavior:** Cooperates until the player defects once. Then defects forever.
-- **Win threshold:** Score >= 10
+- **Win threshold:** Score >= 5
 - **Teaches:** Reputation matters. One betrayal can be permanent.
 - **Chungus pre-level:** "It remembers everything. Especially the first cut."
 - **Implementation:** `(history) => history.some(r => r.playerMove === 'D') ? 'D' : 'C'`
 
 #### Level: "The Coin" — Pavlov (Win-Stay, Lose-Shift)
 - **Behavior:** Starts with 'C'. If last round's payoff was good (3 or 5), repeats last move. If bad (0 or 1), switches.
-- **Win threshold:** Score >= 8
+- **Win threshold:** Score >= 4
 - **Teaches:** Pattern reading. Opponent logic is based on their own outcomes, not just your moves.
 - **Chungus pre-level:** "It doesn't care what you did. It cares what happened to it."
 - **Implementation:**
@@ -226,17 +226,18 @@ Q(s, a) ← Q(s, a) + α × [r + γ × max_a'(Q(s', a')) − Q(s, a)]
 ```
 
 **Agent choose function:**
+
+Returns `{ move, wasExploring }` so GameRoom can fire `onAgentExplore` / `onAgentExploit` mid-round dialogue events.
+
 ```javascript
 function agentChoose(state, Q, epsilon) {
-  // Explore: random action
-  if (Math.random() < epsilon) {
-    return Math.random() < 0.5 ? 'C' : 'D';
-  }
-  // Exploit: best Q value
-  if (Q[state].C > Q[state].D) return 'C';
-  if (Q[state].D > Q[state].C) return 'D';
-  // Tie: random
-  return Math.random() < 0.5 ? 'C' : 'D';
+  const wasExploring = Math.random() < epsilon;
+  if (wasExploring) return { move: Math.random() < 0.5 ? 'C' : 'D', wasExploring: true };
+  let move;
+  if (Q[state].C > Q[state].D) move = 'C';
+  else if (Q[state].D > Q[state].C) move = 'D';
+  else move = Math.random() < 0.5 ? 'C' : 'D';
+  return { move, wasExploring: false };
 }
 ```
 
@@ -294,9 +295,9 @@ Terse. Slightly ominous. Dry humor. Short sentences. Not friendly, not hostile. 
 Shown after every level. Same screen as gameplay (the room), but the mirror transitions to display analysis content.
 
 ### Hardcoded Levels
-1. **Win/Lose indicator** with Chungus comment
+1. **Win/Lose indicator** — "YOU WON" or "YOU LOST" (not "CLEAR"/"FAILED") — with Chungus comment. On win, show `character.defeated.text` from characters config.
 2. **Strategy reveal:** Name + one-sentence explanation (appears on the mirror)
-3. **Round history:** Visual timeline of all 10 rounds, color-coded (green=C, red=D) for both players
+3. **Round history:** Visual timeline of all 5 rounds, color-coded (green=C, red=D) for both players, each cell shows "C" or "D" label, cells are 18×18px minimum
 4. **Pivot round:** Highlighted round where player's behavior pattern shifted (detected by comparing cooperation rate in first half vs second half; if delta > 0.3, mark the midpoint as pivot)
 5. **Score summary:** "You scored X. Needed Y to pass."
 6. **Buttons:** "Retry" (always visible), "Next" (only if score >= threshold)
@@ -314,26 +315,13 @@ Everything from hardcoded analysis, plus:
 
 ## Leaderboard
 
-**Storage:** Shared persistent storage via `window.storage` API.
-
-```javascript
-// Write
-await window.storage.set(
-  'lb:' + Date.now() + ':' + name,
-  JSON.stringify({ name, score, timestamp: Date.now() }),
-  true // shared = true, visible to all users
-);
-
-// Read all entries
-const keys = await window.storage.list('lb:', true);
-// For each key, get the value, parse JSON, sort by score descending
-```
+**Storage:** Supabase (anon key, RLS-gated). Table: `leaderboard (id, name, score, created_at)`. Public read + insert via RLS policies. Falls back to localStorage for offline display.
 
 **Score composition:**
-- 5 hardcoded levels × 10 rounds × max 5 per round = max 250
+- 5 hardcoded levels × 5 rounds × max 5 per round = max 125
 - RL boss × 20 rounds × max 5 per round = max 100
-- Theoretical max: 350
-- Realistic high score: 220–260
+- Theoretical max: 225
+- Realistic high score: 150–190
 
 **Display:** Ranked by total score descending. Name + score. Top 10 on landing page. Full list after game. Player's position highlighted.
 
@@ -365,14 +353,16 @@ const gameState = {
 
 ### Win Condition Thresholds
 
+Calibrated for 5-round gameplay (max 25 pts per level):
+
 ```javascript
 const WIN_THRESHOLDS = {
-  alwaysCooperate: { type: 'outscore' },  // playerScore > opponentScore
-  alwaysDefect:    { type: 'minimum', value: 5 },
-  titForTat:       { type: 'minimum', value: 12 },
-  grimTrigger:     { type: 'minimum', value: 10 },
-  pavlov:          { type: 'minimum', value: 8 },
-  qLearner:        { type: 'outscore' },  // playerScore > opponentScore
+  pushover: { type: 'outscore' },         // playerScore > opponentScore
+  wall:     { type: 'minimum', value: 3 },
+  mirror:   { type: 'minimum', value: 6 },
+  grudge:   { type: 'minimum', value: 5 },
+  coin:     { type: 'minimum', value: 4 },
+  machine:  { type: 'outscore' },         // playerScore > opponentScore
 };
 ```
 
@@ -436,9 +426,254 @@ Transitions between screens should be animated and feel like one continuous expe
 
 ### Not in v1
 - User accounts / auth
-- Backend / database
 - Information theory metrics
 - Strategy editor
 - Multiple game types
 - Social sharing
 - Analytics
+
+---
+
+## Character Configuration System
+
+All character text, audio paths, silhouette styles, thresholds, and mid-round dialogue live in `src/config/characters.js`. This is the **single source of truth** — `opponents.js` imports from it and merges strategy functions in.
+
+### Structure
+
+```javascript
+export const CHARACTERS = {
+  pushover: {
+    id: 'pushover',
+    displayName: 'THE PUSHOVER',
+    strategyName: 'Always Cooperate',
+    strategyDescription: 'Cooperates every single round, no matter what you do.',
+    silhouetteStyle: 'slouched',
+    intro:    { text: "This one never learned to fight back.",         audio: '/sounds/intro_pushover.mp3' },
+    defeated: { text: "That was almost too easy.",                     audio: '/sounds/defeated_pushover.mp3' },
+    winThreshold: { type: 'outscore' },
+    rounds: 5,
+    teaches: 'Exploitation is possible.',
+    midRound: {
+      onPlayerDefect: ["You're being cruel.", "It still won't fight back."],
+      onPlayerCooperate: ["Kind. Efficient. Both.", "Mutual cooperation. Boring, but optimal."],
+    },
+  },
+  wall: {
+    id: 'wall',
+    displayName: 'THE WALL',
+    strategyName: 'Always Defect',
+    strategyDescription: "Defects every round. It made up its mind before you sat down.",
+    silhouetteStyle: 'rigid',
+    intro:    { text: "This one has made up its mind. Have you?",      audio: '/sounds/intro_wall.mp3' },
+    defeated: { text: "You found the floor.",                          audio: '/sounds/defeated_wall.mp3' },
+    winThreshold: { type: 'minimum', value: 3 },
+    rounds: 5,
+    teaches: "Mutual defection is sometimes the only stable outcome.",
+    midRound: {
+      onPlayerCooperate: ["Still giving it chances?", "It won't change."],
+      onPlayerDefect: ["Smart. The only rational move here.", "Now you understand."],
+    },
+  },
+  mirror: {
+    id: 'mirror',
+    displayName: 'THE MIRROR',
+    strategyName: 'Tit for Tat',
+    strategyDescription: 'Starts by cooperating. Then copies your previous move exactly.',
+    silhouetteStyle: 'mirrored',
+    intro:    { text: "Whatever you do, it does. Eventually.",         audio: '/sounds/intro_mirror.mp3' },
+    defeated: { text: "You played it well.",                           audio: '/sounds/defeated_mirror.mp3' },
+    winThreshold: { type: 'minimum', value: 6 },
+    rounds: 5,
+    teaches: 'Reciprocity. Your moves have consequences next round.',
+    midRound: {
+      onFirstDefect: ["There it is. Now watch.", "You started it."],
+      onPlayerCooperate: ["It appreciates that.", "Mutual. Clean."],
+    },
+  },
+  grudge: {
+    id: 'grudge',
+    displayName: 'THE GRUDGE',
+    strategyName: 'Grim Trigger',
+    strategyDescription: 'Cooperates until you defect once. After that, defects forever.',
+    silhouetteStyle: 'still',
+    intro:    { text: "It remembers everything. Especially the first cut.", audio: '/sounds/intro_grudge.mp3' },
+    defeated: { text: "You kept the peace. Rare.",                     audio: '/sounds/defeated_grudge.mp3' },
+    winThreshold: { type: 'minimum', value: 5 },
+    rounds: 5,
+    teaches: 'Reputation matters. One betrayal can be permanent.',
+    midRound: {
+      onFirstDefect: ["You just crossed a line.", "That's permanent now."],
+      onNoDefect: ["Still clean.", "It trusts you. For now."],
+    },
+  },
+  coin: {
+    id: 'coin',
+    displayName: 'THE COIN',
+    strategyName: 'Pavlov (Win-Stay, Lose-Shift)',
+    strategyDescription: "If its last payoff was 3 or more, it repeats its move. Otherwise it switches.",
+    silhouetteStyle: 'fidgety',
+    intro:    { text: "It doesn't care what you did. It cares what happened to it.", audio: '/sounds/intro_coin.mp3' },
+    defeated: { text: "You read it.",                                  audio: '/sounds/defeated_coin.mp3' },
+    winThreshold: { type: 'minimum', value: 4 },
+    rounds: 5,
+    teaches: "Pattern reading. Opponent logic is based on their own outcomes.",
+    midRound: {
+      onPlayerCooperate: ["It's recalibrating.", "Watch what it does next."],
+      onPlayerDefect: ["It'll shift now.", "The pattern is visible if you look."],
+    },
+  },
+  machine: {
+    id: 'machine',
+    displayName: 'THE MACHINE',
+    strategyName: 'Q-Learning Agent',
+    strategyDescription: "Learns your patterns in real time. Phase 1 explores. Phase 2 exploits.",
+    silhouetteStyle: 'computing',
+    intro:    { text: "This one is different. It's watching you. It's learning. 20 rounds. Good luck.", audio: '/sounds/intro_machine.mp3' },
+    defeated: { text: "It studied you and you still won. Interesting.",  audio: '/sounds/defeated_machine.mp3' },
+    winThreshold: { type: 'outscore' },
+    rounds: 20,
+    teaches: "Adaptive agents require adaptive counter-strategies.",
+    midRound: {
+      onAgentExplore: ["Still mapping.", "It's not done exploring."],
+      onAgentExploit: ["It's settled on something.", "Pattern locked."],
+      onPhaseShift:   ["Phase 2. It has a policy now.", "The game just changed."],
+    },
+  },
+};
+
+export const NARRATOR = {
+  landing: "Six opponents. Five are predictable. One is not. Your move.",
+  win:  ["You figured it out. Most don't.", "Clean. Next.", "That was the easy part."],
+  lose: ["Hm. Try again.", "It's not random. Think.", "You're smarter than that. Probably."],
+  rlWin:  "It studied you and you still won. Interesting.",
+  rlLose: "It learned faster than you adapted. That happens.",
+  leaderboard: "Put your name down. Let them know you were here.",
+};
+
+export const SFX = {
+  buttonCooperate: '/sounds/btn_cooperate.mp3',
+  buttonDefect:    '/sounds/btn_defect.mp3',
+  roundReveal:     '/sounds/round_reveal.mp3',
+  win:             '/sounds/win.mp3',
+  lose:            '/sounds/lose.mp3',
+  doorOpen:        '/sounds/door_open.mp3',
+  clipboardSlide:  '/sounds/clipboard_slide.mp3',
+  phaseShift:      '/sounds/phase_shift.mp3',
+};
+```
+
+---
+
+## Character Silhouettes
+
+Each character has a pure CSS silhouette shown during the 3-second intro. No image assets. Built from `<div>` elements shaped with CSS.
+
+### Structure
+- **Head:** Circle (50% border-radius), ~40px wide
+- **Shoulders:** Trapezoid (clip-path or border tricks), ~80px wide
+- **Torso:** Rectangle, ~60px wide × 60px tall
+- All layers use `var(--color-text-ghost)` at 30–50% opacity (silhouette effect through frosted mirror)
+
+### Pose Variants (via className on `<CharacterSilhouette>`)
+- `slouched` — torso slightly rotated, head tilted left, forward lean
+- `rigid` — perfectly centered, no rotation, stiff upright posture
+- `mirrored` — symmetric, slight bilateral symmetry emphasis
+- `still` — zero animation, static, ominous
+- `fidgety` — subtle CSS jitter keyframe (small random translates)
+- `computing` — head nods slightly, rhythmic pulse on the torso
+
+### Default Animation: Breathing
+All poses except `still` and `computing` breathe: `scaleY` oscillates 1 → 1.015 over 3s loop, `transform-origin: bottom center`.
+
+### CSS Classes
+```css
+.silhouette-head { /* circle */ }
+.silhouette-shoulders { /* trapezoid */ }
+.silhouette-torso { /* rectangle */ }
+.silhouette-breathing { animation: breathe 3s ease-in-out infinite; }
+.silhouette-jitter { animation: jitter 0.3s steps(2) infinite; }
+.silhouette-computing { animation: computing-pulse 1.5s ease-in-out infinite; }
+
+@keyframes breathe {
+  0%, 100% { transform: scaleY(1); }
+  50% { transform: scaleY(1.015); }
+}
+@keyframes jitter {
+  0% { transform: translate(0, 0); }
+  25% { transform: translate(-1px, 0); }
+  75% { transform: translate(1px, 0); }
+  100% { transform: translate(0, 0); }
+}
+@keyframes computing-pulse {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 0.5; }
+}
+```
+
+---
+
+## Mid-Round Dialogue System
+
+Characters react to player behavior mid-round. Adds tension and narrative flavor without interrupting gameplay.
+
+### Trigger Events
+- `onPlayerCooperate` — player chose C this round
+- `onPlayerDefect` — player chose D this round
+- `onFirstDefect` — this is the first D in the session
+- `onNoDefect` — player has not defected at all yet
+- `onPhaseShift` — RL boss just entered phase 2
+- `onAgentExplore` — RL agent's move was a random explore (`wasExploring === true` from `chooseAction`)
+- `onAgentExploit` — RL agent exploited this round (`wasExploring === false`)
+
+### Detection Logic (runs after roundResult is set in GameRoom)
+
+```javascript
+function detectMidRoundEvent(roundRecord, history, phase2Active, wasExploring) {
+  const events = [];
+  if (roundRecord.playerMove === 'C') events.push('onPlayerCooperate');
+  if (roundRecord.playerMove === 'D') events.push('onPlayerDefect');
+  if (roundRecord.playerMove === 'D' && !history.slice(0,-1).some(r => r.playerMove === 'D'))
+    events.push('onFirstDefect');
+  if (!history.some(r => r.playerMove === 'D'))
+    events.push('onNoDefect');
+  if (wasExploring === true)  events.push('onAgentExplore');
+  if (wasExploring === false) events.push('onAgentExploit');
+  return events;
+}
+```
+
+### Probability Gate
+- Fire on 40–50% of eligible rounds (`Math.random() < 0.45`)
+- **Never** fire two consecutive rounds: track `lastDialogueRound` as a ref; skip if `lastDialogueRound === round - 1`
+- Pick one random line from the matching event array
+- Display via the `<Narrator>` component under the mirror
+
+---
+
+## 800ms Anticipation Delay
+
+After the player clicks Cooperate or Defect, there is an 800ms pause before the result is revealed. During this window:
+- Buttons are disabled
+- A "..." overlay appears on the mirror (replaces the payoff matrix momentarily)
+- The `...` text pulses with a CSS animation
+- After 800ms, the actual move is dispatched, roundResult is set, and the normal result display plays
+
+This is implemented via `awaitingResult` local state in `GameRoom`:
+1. Click → `setAwaitingResult(true)`, play `SFX.buttonCooperate` or `SFX.buttonDefect`
+2. `setTimeout(800)` → dispatch move to App reducer
+3. Reducer sets `roundResult` → `setAwaitingResult(false)` → show result
+
+The anticipation overlay uses:
+```css
+@keyframes ellipsis-pulse {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 1; }
+}
+.anticipation-text {
+  animation: ellipsis-pulse 0.6s ease-in-out infinite;
+  font-family: var(--font-mono);
+  color: var(--color-text-secondary);
+  font-size: 2rem;
+  letter-spacing: 0.5em;
+}
+```
