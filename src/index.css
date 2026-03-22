@@ -1,0 +1,620 @@
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,300;0,400;0,500;1,300&family=Space+Grotesk:wght@500;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ─── CSS Custom Properties ──────────────────────────────────────────────── */
+:root {
+  --color-void:           #07070B;
+  --color-room:           #0C0C14;
+  --color-surface:        #111119;
+  --color-surface-raised: #18182A;
+  --color-glass:          #1A2A3A;
+  --color-glass-tint:     rgba(34, 90, 140, 0.12);
+  --color-glass-edge:     rgba(100, 160, 220, 0.15);
+  --color-cooperate:      #2DB563;
+  --color-cooperate-glow: rgba(45, 181, 99, 0.25);
+  --color-cooperate-dim:  #1A5C38;
+  --color-defect:         #D94545;
+  --color-defect-glow:    rgba(217, 69, 69, 0.25);
+  --color-defect-dim:     #6B2222;
+  --color-accent:         #5B5FE6;
+  --color-accent-bright:  #7B7FFF;
+  --color-chungus:        #D4A843;
+  --color-chungus-dim:    rgba(212, 168, 67, 0.15);
+  --color-text-primary:   #E0E0EC;
+  --color-text-secondary: #6E6E8A;
+  --color-text-ghost:     #3A3A52;
+  --color-border:         #222236;
+  --color-border-light:   #2E2E48;
+  --color-win:            #2DB563;
+  --color-lose:           #D94545;
+  --color-neutral:        #6E6E8A;
+}
+
+/* ─── Reset & Base ───────────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body, #root {
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+}
+
+body {
+  background-color: var(--color-void);
+  color: var(--color-text-primary);
+  font-family: 'IBM Plex Mono', monospace;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ─── App Shell ──────────────────────────────────────────────────────────── */
+.app-shell {
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+  position: relative;
+}
+
+/* ─── Screen Transitions ─────────────────────────────────────────────────── */
+.screen {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transition: opacity 0.4s cubic-bezier(0.25, 0.1, 0.25, 1);
+  pointer-events: none;
+}
+.screen.active {
+  opacity: 1;
+  pointer-events: all;
+}
+
+/* ─── The Corridor (Landing Page) ────────────────────────────────────────── */
+.corridor {
+  background:
+    radial-gradient(ellipse at 50% 25%, rgba(30, 40, 60, 0.35) 0%, transparent 55%),
+    linear-gradient(180deg, #07070B 0%, #0C0C14 100%);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Wall grid pattern */
+.corridor::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image:
+    repeating-linear-gradient(90deg, rgba(255,255,255,0.03) 0px, transparent 1px, transparent 60px),
+    repeating-linear-gradient(0deg,  rgba(255,255,255,0.03) 0px, transparent 1px, transparent 60px);
+  pointer-events: none;
+}
+
+/* Ceiling-to-floor depth gradient */
+.corridor-depth {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(180deg,
+      rgba(20, 30, 50, 0.4) 0%,
+      transparent 40%,
+      transparent 60%,
+      rgba(0, 0, 0, 0.5) 100%);
+  pointer-events: none;
+}
+
+/* ─── The Door ───────────────────────────────────────────────────────────── */
+.door-frame {
+  position: relative;
+  border: 1px solid rgba(100, 160, 220, 0.08);
+  background: linear-gradient(180deg, #18182A 0%, #111119 100%);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.door-frame::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at 50% 0%, rgba(100, 160, 220, 0.06) 0%, transparent 60%);
+  pointer-events: none;
+}
+
+/* ─── Start Button Glow ──────────────────────────────────────────────────── */
+@keyframes doorGlow {
+  0%, 100% { box-shadow: 0 0 16px rgba(91, 95, 230, 0.5), inset 0 0 16px rgba(91, 95, 230, 0.05); }
+  50%       { box-shadow: 0 0 32px rgba(91, 95, 230, 1.0), inset 0 0 24px rgba(91, 95, 230, 0.1); }
+}
+.door-glow { animation: doorGlow 4s ease-in-out infinite; }
+
+/* ─── The Room (Interrogation) ───────────────────────────────────────────── */
+.room {
+  background:
+    radial-gradient(ellipse at 50% 20%, rgba(40, 50, 70, 0.2) 0%, transparent 50%),
+    var(--color-room);
+  position: relative;
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  perspective: 1200px;
+  perspective-origin: 50% 45%;
+}
+
+/* Vignette */
+.room::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at center, transparent 45%, rgba(7, 7, 11, 0.65) 100%);
+  pointer-events: none;
+  z-index: 10;
+}
+
+.room--phase2 { filter: hue-rotate(-10deg) brightness(0.95); }
+
+.room--win::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(45, 181, 99, 0.03);
+  pointer-events: none;
+  z-index: 0;
+}
+.room--lose::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(217, 69, 69, 0.03);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ─── Wall Labels (above mirror) ─────────────────────────────────────────── */
+.wall-labels {
+  flex-shrink: 0;
+  padding: 12px 16px 8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  transform: translateZ(-20px);
+  position: relative;
+  z-index: 2;
+}
+
+/* ─── The Mirror ─────────────────────────────────────────────────────────── */
+.mirror {
+  flex: 1;
+  background:
+    linear-gradient(170deg, rgba(20, 50, 80, 0.15) 0%, rgba(10, 20, 40, 0.05) 100%),
+    var(--color-glass);
+  border: 1px solid var(--color-glass-edge);
+  border-radius: 4px;
+  box-shadow:
+    0 0 40px rgba(34, 90, 140, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(1px);
+  transform: translateZ(0);
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  margin: 0 16px;
+  z-index: 2;
+}
+
+/* RL Boss scan lines */
+.mirror--rl::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent 0px, transparent 2px,
+    rgba(0, 0, 0, 0.02) 2px, rgba(0, 0, 0, 0.02) 4px
+  );
+  pointer-events: none;
+  z-index: 5;
+  border-radius: inherit;
+}
+
+.mirror--phase2 {
+  box-shadow:
+    0 0 60px rgba(34, 90, 140, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.03) !important;
+}
+
+/* Mirror content areas */
+.mirror-gameplay {
+  padding: 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  height: 100%;
+  overflow-y: auto;
+}
+
+.mirror-analysis {
+  padding: 24px 32px;
+  height: 100%;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.mirror-narrator {
+  padding: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+}
+
+/* ─── The Desk Surface ───────────────────────────────────────────────────── */
+.desk {
+  flex-shrink: 0;
+  background: linear-gradient(180deg, var(--color-surface) 0%, var(--color-surface-raised) 100%);
+  border-top: 1px solid var(--color-border);
+  padding: 12px 16px 8px;
+  transform: translateZ(50px);
+  position: relative;
+  z-index: 2;
+}
+
+/* ─── Action Buttons ─────────────────────────────────────────────────────── */
+.buttons-row {
+  flex-shrink: 0;
+  display: flex;
+  gap: 16px;
+  padding: 12px 16px 16px;
+  transform: translateZ(50px);
+  position: relative;
+  z-index: 2;
+}
+
+.action-btn {
+  flex: 1;
+  min-height: 56px;
+  border-radius: 6px;
+  border: 1px solid;
+  background: var(--color-surface-raised);
+  font-family: 'Space Grotesk', sans-serif;
+  font-weight: 500;
+  font-size: 14px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition:
+    background 150ms cubic-bezier(0.4, 0, 0.2, 1),
+    box-shadow 150ms cubic-bezier(0.4, 0, 0.2, 1),
+    border-color 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  touch-action: manipulation;
+  position: relative;
+  z-index: 3;
+}
+
+.action-btn--cooperate {
+  border-color: var(--color-cooperate-dim);
+  color: var(--color-cooperate);
+}
+.action-btn--cooperate:hover:not(:disabled) {
+  border-color: var(--color-cooperate);
+  box-shadow: 0 0 16px var(--color-cooperate-glow);
+}
+.action-btn--cooperate:active:not(:disabled) {
+  background: var(--color-cooperate);
+  color: #07070B;
+  transform: scale(0.97);
+  transition-duration: 100ms;
+}
+
+.action-btn--defect {
+  border-color: var(--color-defect-dim);
+  color: var(--color-defect);
+}
+.action-btn--defect:hover:not(:disabled) {
+  border-color: var(--color-defect);
+  box-shadow: 0 0 16px var(--color-defect-glow);
+}
+.action-btn--defect:active:not(:disabled) {
+  background: var(--color-defect);
+  color: #07070B;
+  transform: scale(0.97);
+  transition-duration: 100ms;
+}
+
+.action-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+/* ─── Round Result Display ───────────────────────────────────────────────── */
+.round-result {
+  position: absolute;
+  inset: 0;
+  background: rgba(7, 7, 11, 0.85);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  z-index: 6;
+  border-radius: 4px;
+}
+
+.result-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-family: 'IBM Plex Mono', monospace;
+}
+
+/* ─── Round History Strip ────────────────────────────────────────────────── */
+.history-strip {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}
+
+.history-slot {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.history-marker {
+  width: 20px;
+  height: 6px;
+  border-radius: 3px;
+  transition: none;
+}
+
+/* ─── Payoff Matrix ──────────────────────────────────────────────────────── */
+.payoff-matrix {
+  display: grid;
+  grid-template-columns: 40px 1fr 1fr;
+  grid-template-rows: 24px 1fr 1fr;
+  gap: 4px;
+  font-family: 'IBM Plex Mono', monospace;
+}
+
+.matrix-cell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 8px;
+  border-radius: 3px;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+/* ─── Analysis Screen ────────────────────────────────────────────────────── */
+.strategy-name {
+  font-family: 'Space Grotesk', sans-serif;
+  font-weight: 700;
+  font-size: 20px;
+  letter-spacing: -0.01em;
+  text-transform: uppercase;
+}
+
+.cursor-blink::after {
+  content: '_';
+  animation: blink 1s step-end infinite;
+}
+@keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+
+.analysis-btn {
+  font-family: 'Space Grotesk', sans-serif;
+  font-weight: 500;
+  font-size: 13px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 10px 20px;
+  border-radius: 6px;
+  border: 1px solid;
+  cursor: pointer;
+  transition: all 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  touch-action: manipulation;
+}
+
+.analysis-btn--retry {
+  border-color: var(--color-border-light);
+  color: var(--color-text-secondary);
+  background: transparent;
+}
+.analysis-btn--retry:hover {
+  border-color: var(--color-text-secondary);
+  color: var(--color-text-primary);
+}
+
+.analysis-btn--next {
+  border-color: var(--color-accent);
+  color: var(--color-accent-bright);
+  background: rgba(91, 95, 230, 0.08);
+}
+.analysis-btn--next:hover {
+  background: rgba(91, 95, 230, 0.16);
+}
+
+/* ─── Clipboard (Leaderboard) ────────────────────────────────────────────── */
+.clipboard-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(7, 7, 11, 0.6);
+  backdrop-filter: blur(4px);
+  z-index: 50;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.clipboard {
+  background: #1A1A24;
+  border-radius: 2px 2px 0 0;
+  width: 100%;
+  max-width: 480px;
+  max-height: 85vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  transform: translateY(100%);
+  transition: transform 400ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+.clipboard.open { transform: translateY(0); }
+
+.clipboard-clip {
+  height: 20px;
+  background: linear-gradient(180deg, #2A2A3E 0%, #1E1E2E 100%);
+  border-bottom: 1px solid var(--color-border);
+  position: relative;
+  flex-shrink: 0;
+}
+.clipboard-clip::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 40px;
+  height: 12px;
+  background: linear-gradient(180deg, #3A3A52 0%, #2A2A3E 100%);
+  border-radius: 2px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.clipboard-body {
+  padding: 20px 24px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.leaderboard-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--color-border);
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 13px;
+}
+.leaderboard-row:last-child { border-bottom: none; }
+
+.leaderboard-row--player {
+  border-left: 3px solid var(--color-chungus);
+  padding-left: 8px;
+  background: rgba(212, 168, 67, 0.05);
+  margin-left: -11px;
+}
+
+.name-input {
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--color-border-light);
+  color: var(--color-text-primary);
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 13px;
+  padding: 4px 0;
+  outline: none;
+  width: 100%;
+  caret-color: var(--color-accent-bright);
+}
+.name-input::placeholder { color: var(--color-text-ghost); }
+.name-input:focus { border-bottom-color: var(--color-accent); }
+
+/* ─── Narrator (Chungus) ─────────────────────────────────────────────────── */
+.narrator-text {
+  font-family: 'IBM Plex Mono', monospace;
+  font-weight: 300;
+  font-style: italic;
+  color: var(--color-chungus);
+  font-size: 16px;
+  line-height: 1.6;
+  text-align: center;
+  letter-spacing: 0.01em;
+}
+
+/* ─── Q-Table Reveal ─────────────────────────────────────────────────────── */
+.qtable {
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  overflow: hidden;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+}
+.qtable-header {
+  background: var(--color-surface);
+  padding: 6px 8px;
+  display: grid;
+  grid-template-columns: 50px 1fr 1fr 60px;
+  gap: 8px;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 10px;
+}
+.qtable-row {
+  padding: 6px 8px;
+  display: grid;
+  grid-template-columns: 50px 1fr 1fr 60px;
+  gap: 8px;
+  border-top: 1px solid var(--color-border);
+  align-items: center;
+}
+.qtable-row--unvisited { opacity: 0.35; }
+
+/* ─── Keyframe Animations ────────────────────────────────────────────────── */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes fadeInSlow {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes flicker {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.7; }
+}
+@keyframes phaseFlicker {
+  0%   { opacity: 1; }
+  15%  { opacity: 0.7; }
+  30%  { opacity: 1; }
+  45%  { opacity: 0.85; }
+  60%  { opacity: 1; }
+}
+
+.animate-fade-in      { animation: fadeIn 200ms cubic-bezier(0.25, 0.1, 0.25, 1) forwards; }
+.animate-fade-in-slow { animation: fadeInSlow 500ms cubic-bezier(0.25, 0.1, 0.25, 1) forwards; }
+.animate-slide-up     { animation: slideUp 300ms cubic-bezier(0.25, 0.1, 0.25, 1) forwards; }
+.animate-flicker      { animation: flicker 200ms ease-in-out; }
+.animate-phase-shift  { animation: phaseFlicker 200ms ease-in-out; }
+
+/* Staggered result reveals */
+.result-stagger-0 { animation: fadeIn 200ms 0ms   cubic-bezier(0.25, 0.1, 0.25, 1) both; }
+.result-stagger-1 { animation: fadeIn 200ms 100ms cubic-bezier(0.25, 0.1, 0.25, 1) both; }
+.result-stagger-2 { animation: fadeIn 200ms 200ms cubic-bezier(0.25, 0.1, 0.25, 1) both; }
+
+/* ─── Responsive ─────────────────────────────────────────────────────────── */
+@media (min-width: 480px) {
+  .mirror { margin: 0 24px; }
+  .wall-labels { padding: 16px 24px 8px; }
+  .desk { padding: 12px 24px 8px; }
+  .buttons-row { padding: 12px 24px 24px; }
+  .mirror-gameplay { padding: 40px; }
+  .action-btn { min-height: 60px; font-size: 15px; }
+}
+
+@media (min-width: 720px) {
+  .room { max-width: 720px; margin: 0 auto; }
+  .corridor .corridor-content { max-width: 720px; margin: 0 auto; }
+  .clipboard { border-radius: 2px; max-height: 75vh; }
+}
