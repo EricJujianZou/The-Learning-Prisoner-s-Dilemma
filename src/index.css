@@ -375,7 +375,7 @@ body {
 /* ─── Payoff Matrix ──────────────────────────────────────────────────────── */
 .payoff-matrix {
   display: grid;
-  grid-template-columns: 52px 1fr 1fr;
+  grid-template-columns: max-content 1fr 1fr;
   grid-template-rows: 28px 1fr 1fr;
   gap: 6px;
   font-family: 'IBM Plex Mono', monospace;
@@ -744,7 +744,7 @@ body {
 .buttons-row { padding: 8px 12px 12px; gap: 8px; }
 .action-btn { min-height: 52px; font-size: 13px; }
 .matrix-cell { padding: 10px 4px; font-size: 13px; }
-.payoff-matrix { grid-template-columns: 44px 1fr 1fr; gap: 4px; font-size: 10px; }
+.payoff-matrix { grid-template-columns: max-content 1fr 1fr; gap: 4px; font-size: 10px; }
 .mirror-analysis { gap: 12px; }
 
 @media (min-width: 480px) {
@@ -756,7 +756,7 @@ body {
   .mirror-analysis { padding: 20px 24px; gap: 14px; }
   .action-btn { min-height: 56px; font-size: 14px; }
   .matrix-cell { padding: 16px 6px; font-size: 15px; }
-  .payoff-matrix { grid-template-columns: 52px 1fr 1fr; gap: 6px; font-size: 11px; }
+  .payoff-matrix { grid-template-columns: max-content 1fr 1fr; gap: 6px; font-size: 11px; }
 }
 
 @media (min-width: 600px) {

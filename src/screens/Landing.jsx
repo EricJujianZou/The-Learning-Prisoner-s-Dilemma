@@ -355,14 +355,14 @@ export default function Landing({ onStart }) {
                 <div className="text-2xs font-mono text-text-ghost uppercase tracking-widest mb-3 text-center">
                   Payoff Matrix — Your Score / Their Score
                 </div>
-                <div className="grid gap-1" style={{ gridTemplateColumns: '72px 1fr 1fr', gridTemplateRows: '20px 1fr 1fr', fontSize: '11px' }}>
+                <div className="grid gap-1" style={{ gridTemplateColumns: 'max-content 1fr 1fr', gridTemplateRows: '20px 1fr 1fr', fontSize: '11px' }}>
                   <div />
                   <div className="text-center text-2xs font-mono flex items-end justify-center pb-1" style={{ color: 'rgba(255,255,255,0.85)' }}>They Cooperate</div>
                   <div className="text-center text-2xs font-mono flex items-end justify-center pb-1" style={{ color: 'rgba(255,255,255,0.85)' }}>They Defect</div>
-                  <div className="text-2xs font-mono flex items-center justify-end pr-1" style={{ color: 'rgba(255,255,255,0.85)' }}>You Cooperate</div>
+                  <div className="text-2xs font-mono flex items-center justify-start pr-3" style={{ color: 'rgba(255,255,255,0.85)', whiteSpace: 'nowrap' }}>You Cooperate</div>
                   <div className="flex items-center justify-center p-2 rounded-sm font-mono" style={{ background: 'rgba(80,140,200,0.12)', border: '1px solid rgba(80,140,200,0.3)', color: 'rgba(255,255,255,0.85)' }}>3 pts / 3 pts</div>
                   <div className="flex items-center justify-center p-2 rounded-sm font-mono" style={{ background: 'rgba(80,140,200,0.12)', border: '1px solid rgba(80,140,200,0.3)', color: 'rgba(255,255,255,0.85)' }}>0 pts / 5 pts</div>
-                  <div className="text-2xs font-mono flex items-center justify-end pr-1" style={{ color: 'rgba(255,255,255,0.85)' }}>You Defect</div>
+                  <div className="text-2xs font-mono flex items-center justify-start pr-3" style={{ color: 'rgba(255,255,255,0.85)', whiteSpace: 'nowrap' }}>You Defect</div>
                   <div className="flex items-center justify-center p-2 rounded-sm font-mono" style={{ background: 'rgba(80,140,200,0.12)', border: '1px solid rgba(80,140,200,0.3)', color: 'rgba(255,255,255,0.85)' }}>5 pts / 0 pts</div>
                   <div className="flex items-center justify-center p-2 rounded-sm font-mono" style={{ background: 'rgba(80,140,200,0.12)', border: '1px solid rgba(80,140,200,0.3)', color: 'rgba(255,255,255,0.85)' }}>1 pts / 1 pts</div>
                 </div>

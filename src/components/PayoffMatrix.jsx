@@ -67,7 +67,7 @@ export default function PayoffMatrix() {
         <motion.div
           variants={cellIn}
           className="text-2xs font-mono uppercase tracking-widest flex items-center justify-start pl-1"
-          style={{ color: 'rgba(255,255,255,1)' }}
+          style={{ color: 'rgba(255,255,255,1)', whiteSpace: 'nowrap' }}
         >
           You Cooperate
         </motion.div>
@@ -92,7 +92,7 @@ export default function PayoffMatrix() {
         <motion.div
           variants={cellIn}
           className="text-2xs font-mono uppercase tracking-widest flex items-center justify-start pl-1"
-          style={{ color: 'rgba(255,255,255,1)' }}
+          style={{ color: 'rgba(255,255,255,1)', whiteSpace: 'nowrap' }}
         >
           You Defect
         </motion.div>

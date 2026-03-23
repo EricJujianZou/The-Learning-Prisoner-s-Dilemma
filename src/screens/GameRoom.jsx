@@ -238,8 +238,8 @@ export default function GameRoom({
           )}
         </div>
 
-        <div className="flex items-center gap-4">
-          <div className="flex flex-col items-end gap-0.5">
+        <div className="flex items-center gap-6">
+          <div className="flex flex-col items-start gap-0.5">
             <div className="flex items-center gap-2">
               <span className="font-mono text-text-ghost" style={{ fontSize: '10px' }}>YOU</span>
               <AnimatePresence mode="popLayout">
@@ -255,13 +255,14 @@ export default function GameRoom({
                   {playerScore}
                 </motion.span>
               </AnimatePresence>
+              <span className="font-mono text-text-ghost" style={{ fontSize: '10px' }}>pts</span>
             </div>
             <div className="flex items-center gap-2">
               <span className="font-mono text-text-ghost" style={{ fontSize: '10px' }}>THEM</span>
               <AnimatePresence mode="popLayout">
                 <motion.span
                   key={opponentScore}
-                  className="font-mono font-medium text-text-secondary"
+                  className="font-mono font-medium text-text-primary"
                   style={{ fontSize: '16px', display: 'inline-block' }}
                   initial={{ opacity: 0, y: 10, scale: 0.9 }}
                   animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -271,11 +272,12 @@ export default function GameRoom({
                   {opponentScore}
                 </motion.span>
               </AnimatePresence>
+              <span className="font-mono text-text-ghost" style={{ fontSize: '10px' }}>pts</span>
             </div>
           </div>
           <div className="flex flex-col items-center">
-            <span className="font-mono font-medium text-text-primary" style={{ fontSize: '18px' }}>{round}</span>
-            <span className="font-mono text-text-ghost" style={{ fontSize: '10px' }}>/ {maxRounds}</span>
+            <span className="font-mono font-medium text-text-primary" style={{ fontSize: '18px' }}>{round} / {maxRounds}</span>
+            <span className="font-mono text-text-primary" style={{ fontSize: '10px' }}>turns</span>
           </div>
         </div>
       </motion.div>
