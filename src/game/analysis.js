@@ -24,10 +24,10 @@ export function computeStats(history) {
   };
 }
 
-// RL boss only: splits history into phase 1 (rounds 1–10) and phase 2 (rounds 11–20).
+// RL boss only: splits history into phase 1 (rounds 1–5) and phase 2 (rounds 6–10).
 export function computePhaseScores(history) {
-  const p1 = history.slice(0, 10);
-  const p2 = history.slice(10);
+  const p1 = history.slice(0, 5);
+  const p2 = history.slice(5);
   return {
     phase1Player:   p1.reduce((s, r) => s + r.playerReward, 0),
     phase1Opponent: p1.reduce((s, r) => s + r.opponentReward, 0),

@@ -98,10 +98,10 @@ export default function GameRoom({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [roundResult]);
 
-  // ── Phase 2 flicker at round 11 ───────────────────────────────────────────
+  // ── Phase 2 flicker at round 6 ────────────────────────────────────────────
   const prevRound = useRef(round);
   useEffect(() => {
-    if (isRL && prevRound.current === 10 && round === 11) {
+    if (isRL && prevRound.current === 5 && round === 6) {
       setPhase2Flicker(true);
       playPhaseShift();
       const t = setTimeout(() => setPhase2Flicker(false), 300);
@@ -146,7 +146,7 @@ export default function GameRoom({
       events.push('onNoDefect');
     if (isRL && result.wasExploring === true)  events.push('onAgentExplore');
     if (isRL && result.wasExploring === false) events.push('onAgentExploit');
-    if (isRL && round === 11) events.push('onPhaseShift');
+    if (isRL && round === 6) events.push('onPhaseShift');
 
     for (const event of events) {
       const lines = character.midRound[event];

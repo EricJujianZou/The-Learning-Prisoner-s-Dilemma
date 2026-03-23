@@ -131,13 +131,13 @@ export default function PostLevel({ analysisData, onRetry, onNextLevel }) {
             Phase Comparison
           </div>
           <div className="flex justify-between text-text-secondary">
-            <span>Phase 1 (1–10)</span>
+            <span>Phase 1 (1–5)</span>
             <span>
               You <span className="text-text-primary">{phaseScores.phase1Player}</span> — Them <span className="text-text-primary">{phaseScores.phase1Opponent}</span>
             </span>
           </div>
           <div className="flex justify-between text-text-secondary">
-            <span>Phase 2 (11–20)</span>
+            <span>Phase 2 (6–10)</span>
             <span>
               You <span className="text-text-primary">{phaseScores.phase2Player}</span> — Them <span className="text-text-primary">{phaseScores.phase2Opponent}</span>
             </span>

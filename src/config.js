@@ -13,17 +13,17 @@ export const QL_CONFIG = {
 
   // Initial exploration rate (0–1).
   // 0.5 = 50% random actions at round 1.
-  EPSILON_START: 0.3,
+  EPSILON_START: 0.5,
 
   // Decay multiplier applied to epsilon each round (0–1).
-  // 0.9 → epsilon drops to ~0.07 by round 20.
+  // 0.9 → epsilon drops to ~0.35 by round 10.
   // Lower values = exploits earlier; higher = stays random longer.
   EPSILON_DECAY: 0.9,
 
   // Starting Q value for all state-action pairs.
   // 2.5 = the average possible payoff (neutral initialization).
   // Higher = agent starts optimistic (explores more); lower = pessimistic.
-  Q_INIT: 2.5,
+  Q_INIT: 3,
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -31,7 +31,7 @@ export const QL_CONFIG = {
 // ─────────────────────────────────────────────────────────────────────────────
 export const GAME_CONFIG = {
   ROUNDS_STANDARD: 5,
-  ROUNDS_RL: 20,
+  ROUNDS_RL: 10,
   // Milliseconds the round result is displayed before auto-advancing.
   RESULT_DISPLAY_MS: 1500,
   // Milliseconds the Chungus intro is shown before gameplay begins.

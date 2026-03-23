@@ -27,12 +27,14 @@ A browser game where players face 5 mystery opponents in the Prisoner's Dilemma,
 Two fonts only. Load both from Google Fonts.
 
 ### Headings / Display: `Space Grotesk`
+
 - Weights: 500, 700
 - Use for: title screen, strategy reveal names ("THE MIRROR"), phase indicators, score displays, button labels
 - Letter-spacing: -0.02em on large sizes (32px+), 0 on medium sizes
 - Never italic. Always uppercase for strategy names and level labels.
 
 ### Body / Data / Narrator: `IBM Plex Mono`
+
 - Weights: 300, 400, 500
 - Use for: all numbers, scores, round counters, Q-table data, The Chungus narrator text, payoff matrix values, round history labels, instructions
 - Letter-spacing: 0.01em
@@ -41,6 +43,7 @@ Two fonts only. Load both from Google Fonts.
 - Body text: weight 400
 
 ### Rules
+
 - No font below 12px rendered size on any screen
 - Monospace (IBM Plex Mono) for anything that is a number, a data point, or spoken by The Chungus
 - Sans-serif (Space Grotesk) for anything that is a label, a heading, or a button
@@ -56,49 +59,60 @@ Every color must be defined as a CSS custom property in `:root` and referenced v
 ```css
 :root {
   /* Backgrounds */
-  --color-void: #07070B;         /* deepest background, corridor, edges */
-  --color-room: #0C0C14;         /* interrogation room floor/walls */
-  --color-surface: #111119;      /* cards, panels, desk surface */
-  --color-surface-raised: #18182A; /* elevated elements, clipboard, buttons at rest */
+  --color-void: #07070b; /* deepest background, corridor, edges */
+  --color-room: #0c0c14; /* interrogation room floor/walls */
+  --color-surface: #111119; /* cards, panels, desk surface */
+  --color-surface-raised: #18182a; /* elevated elements, clipboard, buttons at rest */
 
   /* Glass / Mirror */
-  --color-glass: #1A2A3A;        /* one-way mirror base */
+  --color-glass: #1a2a3a; /* one-way mirror base */
   --color-glass-tint: rgba(34, 90, 140, 0.12); /* mirror reflection overlay */
   --color-glass-edge: rgba(100, 160, 220, 0.15); /* mirror border glow */
 
   /* Actions */
-  --color-cooperate: #2DB563;     /* green, cooperate button, C indicators */
-  --color-cooperate-glow: rgba(45, 181, 99, 0.25); /* button glow, hover state */
-  --color-cooperate-dim: #1A5C38; /* cooperate button border at rest */
-  --color-defect: #D94545;        /* red, defect button, D indicators */
+  --color-cooperate: #2db563; /* green, cooperate button, C indicators */
+  --color-cooperate-glow: rgba(
+    45,
+    181,
+    99,
+    0.25
+  ); /* button glow, hover state */
+  --color-cooperate-dim: #1a5c38; /* cooperate button border at rest */
+  --color-defect: #d94545; /* red, defect button, D indicators */
   --color-defect-glow: rgba(217, 69, 69, 0.25);
-  --color-defect-dim: #6B2222;
+  --color-defect-dim: #6b2222;
 
   /* Accent */
-  --color-accent: #5B5FE6;       /* UI elements, highlights, progress indicators */
-  --color-accent-bright: #7B7FFF; /* hover states, active elements */
+  --color-accent: #5b5fe6; /* UI elements, highlights, progress indicators */
+  --color-accent-bright: #7b7fff; /* hover states, active elements */
 
   /* Narrator */
-  --color-chungus: #D4A843;      /* The Chungus gold, narrator text, special highlights */
-  --color-chungus-dim: rgba(212, 168, 67, 0.15); /* background behind narrator text */
+  --color-chungus: #d4a843; /* The Chungus gold, narrator text, special highlights */
+  --color-chungus-dim: rgba(
+    212,
+    168,
+    67,
+    0.15
+  ); /* background behind narrator text */
 
   /* Text */
-  --color-text-primary: #E0E0EC;  /* main readable text */
-  --color-text-secondary: #6E6E8A; /* labels, placeholders, muted info */
-  --color-text-ghost: #3A3A52;    /* disabled states, empty round slots */
+  --color-text-primary: #e0e0ec; /* main readable text */
+  --color-text-secondary: #6e6e8a; /* labels, placeholders, muted info */
+  --color-text-ghost: #3a3a52; /* disabled states, empty round slots */
 
   /* Borders */
-  --color-border: #222236;        /* default borders */
-  --color-border-light: #2E2E48;  /* subtle dividers */
+  --color-border: #222236; /* default borders */
+  --color-border-light: #2e2e48; /* subtle dividers */
 
   /* Feedback */
-  --color-win: #2DB563;           /* same as cooperate, used for win states */
-  --color-lose: #D94545;          /* same as defect, used for lose states */
-  --color-neutral: #6E6E8A;       /* ties, unknown states */
+  --color-win: #2db563; /* same as cooperate, used for win states */
+  --color-lose: #d94545; /* same as defect, used for lose states */
+  --color-neutral: #6e6e8a; /* ties, unknown states */
 }
 ```
 
 ### Usage Rules
+
 - Background layering: void → room → surface → surface-raised. Never skip a level.
 - The cooperate/defect colors are ONLY for game actions. Do not use green/red for generic success/error states outside the game context.
 - The Chungus gold (#D4A843) is reserved exclusively for narrator text and leaderboard position highlights. Do not use it for buttons, borders, or decorative elements.
@@ -110,6 +124,7 @@ Every color must be defined as a CSS custom property in `:root` and referenced v
 ## Layout Philosophy
 
 ### Perspective and Depth
+
 The entire game uses a CSS perspective container to create the interrogation room POV.
 
 ```css
@@ -122,6 +137,7 @@ The entire game uses a CSS perspective container to create the interrogation roo
 Elements at different "depths" use `translateZ()` to position them in the 3D space. The mirror is at z=0 (base plane). Buttons are at z=50px (closer to player). Wall labels are at z=-20px (slightly behind the mirror plane). This is subtle. Do not make it extreme or it looks like a bad 90s website.
 
 ### Spatial Rules
+
 - Max content width: 720px for the game area, 480px for the clipboard/leaderboard
 - Mobile: 100vw with 16px horizontal padding
 - Vertical rhythm: 8px base unit. All spacing is multiples of 8.
@@ -131,11 +147,13 @@ Elements at different "depths" use `translateZ()` to position them in the 3D spa
 - Round history strip: fixed at bottom of the game area, max 10 or 20 slots, evenly distributed
 
 ### Grid
+
 No CSS Grid for the game layout. Use flexbox for the room composition (vertical: wall labels → mirror → desk/buttons → history strip). The payoff matrix on the mirror is a 2x2 CSS Grid.
 
 The leaderboard is a simple flex column. The landing page corridor is a single centered flex column with perspective.
 
 ### Whitespace
+
 Generous inside the mirror panel (32px padding). Tight on the desk surface and history strip (8px gaps). The contrast between the open mirror space and the dense desk creates visual hierarchy.
 
 ---
@@ -143,6 +161,7 @@ Generous inside the mirror panel (32px padding). Tight on the desk surface and h
 ## Animation Rules
 
 ### What Animates
+
 - **Screen transitions:** Fade + translateY. Landing → game: 400ms ease-out. Between levels: 300ms. Never instant cuts.
 - **Door opening (landing → game):** Scale from 1 → 1.05 on the door element, opacity 1 → 0, then the room fades in. Total: 600ms.
 - **Button press feedback:** Scale 0.97 on active, 100ms. Background color fill from border-only to filled, 150ms.
@@ -155,17 +174,20 @@ Generous inside the mirror panel (32px padding). Tight on the desk surface and h
 - **Q-table values updating (post-game reveal only):** Numbers count up from 0 to their actual value, 300ms per cell, staggered by 50ms per row. Use `requestAnimationFrame`, not CSS transitions for number interpolation.
 
 ### Easing
+
 - All transitions: `cubic-bezier(0.25, 0.1, 0.25, 1)` (smooth deceleration)
 - Button presses: `cubic-bezier(0.4, 0, 0.2, 1)` (snappy)
 - Clipboard slide: `cubic-bezier(0.16, 1, 0.3, 1)` (fast start, gentle stop)
 
 ### What Does NOT Animate
+
 - The payoff matrix. It's always there, always static. Stability communicates reliability.
 - Score numbers during gameplay. They update instantly. No counting animation mid-game (it would slow the pace).
 - Round history markers. They appear instantly when a round completes. Snap, not fade.
 - Anything on the landing page below the fold (leaderboard preview). Static. No scroll animations. No parallax.
 
 ### Library
+
 Do not import Framer Motion, GSAP, or any animation library. Use CSS transitions and keyframes for everything. Use `requestAnimationFrame` only for the number counting effect on Q-table reveal. The project is small enough that a library adds bloat without value.
 
 ---
@@ -173,46 +195,79 @@ Do not import Framer Motion, GSAP, or any animation library. Use CSS transitions
 ## Backgrounds and Texture
 
 ### The Corridor (Landing Page)
+
 ```css
 .corridor {
   background:
-    radial-gradient(ellipse at 50% 30%, rgba(30, 40, 60, 0.3) 0%, transparent 60%),
-    linear-gradient(180deg, #07070B 0%, #0C0C14 100%);
+    radial-gradient(
+      ellipse at 50% 30%,
+      rgba(30, 40, 60, 0.3) 0%,
+      transparent 60%
+    ),
+    linear-gradient(180deg, #07070b 0%, #0c0c14 100%);
 }
 ```
+
 Add a faint grid pattern on the walls using a repeating-linear-gradient at very low opacity (0.03):
+
 ```css
 .corridor-walls {
   background-image:
-    repeating-linear-gradient(90deg, rgba(255,255,255,0.03) 0px, transparent 1px, transparent 60px),
-    repeating-linear-gradient(0deg, rgba(255,255,255,0.03) 0px, transparent 1px, transparent 60px);
+    repeating-linear-gradient(
+      90deg,
+      rgba(255, 255, 255, 0.03) 0px,
+      transparent 1px,
+      transparent 60px
+    ),
+    repeating-linear-gradient(
+      0deg,
+      rgba(255, 255, 255, 0.03) 0px,
+      transparent 1px,
+      transparent 60px
+    );
 }
 ```
 
 ### The Room (Game Stage)
+
 ```css
 .room {
   background:
-    radial-gradient(ellipse at 50% 20%, rgba(40, 50, 70, 0.2) 0%, transparent 50%),
+    radial-gradient(
+      ellipse at 50% 20%,
+      rgba(40, 50, 70, 0.2) 0%,
+      transparent 50%
+    ),
     var(--color-room);
 }
 ```
+
 Vignette effect on the room container:
+
 ```css
 .room::after {
-  content: '';
+  content: "";
   position: absolute;
   inset: 0;
-  background: radial-gradient(ellipse at center, transparent 50%, rgba(7, 7, 11, 0.6) 100%);
+  background: radial-gradient(
+    ellipse at center,
+    transparent 50%,
+    rgba(7, 7, 11, 0.6) 100%
+  );
   pointer-events: none;
 }
 ```
 
 ### The Mirror
+
 ```css
 .mirror {
   background:
-    linear-gradient(170deg, rgba(20, 50, 80, 0.15) 0%, rgba(10, 20, 40, 0.05) 100%),
+    linear-gradient(
+      170deg,
+      rgba(20, 50, 80, 0.15) 0%,
+      rgba(10, 20, 40, 0.05) 100%
+    ),
     var(--color-glass);
   border: 1px solid var(--color-glass-edge);
   box-shadow:
@@ -223,16 +278,24 @@ Vignette effect on the room container:
 ```
 
 ### The Desk Surface
+
 A subtle horizontal gradient suggesting a flat surface receding in perspective:
+
 ```css
 .desk {
-  background: linear-gradient(180deg, var(--color-surface) 0%, var(--color-surface-raised) 100%);
+  background: linear-gradient(
+    180deg,
+    var(--color-surface) 0%,
+    var(--color-surface-raised) 100%
+  );
   border-top: 1px solid var(--color-border);
 }
 ```
 
 ### RL Boss Phase 2 Shift
+
 When the RL boss enters phase 2, apply a CSS filter to the room container:
+
 ```css
 .room--phase2 {
   filter: hue-rotate(-10deg) brightness(0.95);
@@ -245,6 +308,7 @@ When the RL boss enters phase 2, apply a CSS filter to the room container:
 ```
 
 ### Noise / Grain
+
 Do NOT add film grain or noise texture. The aesthetic is institutional and clean, not analog or vintage. The darkness and the glass reflections provide enough visual interest. Grain would fight the precision of the monospace typography and the data-display elements.
 
 ---
@@ -337,37 +401,37 @@ npx vercel --prod
 ```javascript
 // tailwind.config.js
 export default {
-  content: ['./index.html', './src/**/*.{js,jsx}'],
+  content: ["./index.html", "./src/**/*.{js,jsx}"],
   theme: {
     extend: {
       colors: {
-        void: '#07070B',
-        room: '#0C0C14',
-        surface: '#111119',
-        'surface-raised': '#18182A',
-        glass: '#1A2A3A',
-        cooperate: '#2DB563',
-        'cooperate-dim': '#1A5C38',
-        defect: '#D94545',
-        'defect-dim': '#6B2222',
-        accent: '#5B5FE6',
-        'accent-bright': '#7B7FFF',
-        chungus: '#D4A843',
-        'text-primary': '#E0E0EC',
-        'text-secondary': '#6E6E8A',
-        'text-ghost': '#3A3A52',
-        border: '#222236',
-        'border-light': '#2E2E48',
+        void: "#07070B",
+        room: "#0C0C14",
+        surface: "#111119",
+        "surface-raised": "#18182A",
+        glass: "#1A2A3A",
+        cooperate: "#2DB563",
+        "cooperate-dim": "#1A5C38",
+        defect: "#D94545",
+        "defect-dim": "#6B2222",
+        accent: "#5B5FE6",
+        "accent-bright": "#7B7FFF",
+        chungus: "#D4A843",
+        "text-primary": "#E0E0EC",
+        "text-secondary": "#6E6E8A",
+        "text-ghost": "#3A3A52",
+        border: "#222236",
+        "border-light": "#2E2E48",
       },
       fontFamily: {
-        display: ['"Space Grotesk"', 'sans-serif'],
-        mono: ['"IBM Plex Mono"', 'monospace'],
+        display: ['"Space Grotesk"', "sans-serif"],
+        mono: ['"IBM Plex Mono"', "monospace"],
       },
       borderRadius: {
-        panel: '8px',
-        button: '6px',
-        mirror: '4px',
-        clipboard: '2px',
+        panel: "8px",
+        button: "6px",
+        mirror: "4px",
+        clipboard: "2px",
       },
       spacing: {
         // 8px base unit enforced through Tailwind defaults (which use 4px base)

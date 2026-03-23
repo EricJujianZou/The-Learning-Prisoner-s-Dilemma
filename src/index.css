@@ -23,9 +23,9 @@
   --color-accent-bright:  #7B7FFF;
   --color-chungus:        #D4A843;
   --color-chungus-dim:    rgba(212, 168, 67, 0.15);
-  --color-text-primary:   #E0E0EC;
-  --color-text-secondary: #6E6E8A;
-  --color-text-ghost:     #3A3A52;
+  --color-text-primary:   #ffffff;
+  --color-text-secondary: #ffffff;
+  --color-text-ghost:     #ffffff;
   --color-border:         #222236;
   --color-border-light:   #2E2E48;
   --color-win:            #2DB563;
@@ -39,7 +39,6 @@
 html, body, #root {
   height: 100%;
   width: 100%;
-  overflow: hidden;
 }
 
 body {
@@ -54,7 +53,6 @@ body {
 .app-shell {
   height: 100%;
   width: 100%;
-  overflow: hidden;
   position: relative;
 }
 
@@ -77,7 +75,7 @@ body {
     radial-gradient(ellipse at 50% 25%, rgba(30, 40, 60, 0.35) 0%, transparent 55%),
     linear-gradient(180deg, #07070B 0%, #0C0C14 100%);
   position: relative;
-  overflow: hidden;
+  overflow-y: auto;
 }
 
 /* Wall grid pattern */
@@ -483,7 +481,7 @@ body {
   transform: translate(-50%, -50%);
   width: 40px;
   height: 12px;
-  background: linear-gradient(180deg, #3A3A52 0%, #2A2A3E 100%);
+  background: linear-gradient(180deg, #ffffff 0%, #2A2A3E 100%);
   border-radius: 2px;
   border: 1px solid rgba(255, 255, 255, 0.06);
 }
@@ -736,13 +734,40 @@ body {
 }
 
 /* ─── Responsive ─────────────────────────────────────────────────────────── */
+
+/* Mobile base — tight layout for small screens */
+.mirror-gameplay { padding: 16px 12px; gap: 12px; }
+.mirror-analysis { padding: 16px 12px; }
+.mirror { margin: 0 8px; }
+.wall-labels { padding: 10px 12px 6px; }
+.desk { padding: 8px 12px 6px; }
+.buttons-row { padding: 8px 12px 12px; gap: 8px; }
+.action-btn { min-height: 52px; font-size: 13px; }
+.matrix-cell { padding: 10px 4px; font-size: 13px; }
+.payoff-matrix { grid-template-columns: 44px 1fr 1fr; gap: 4px; font-size: 10px; }
+.mirror-analysis { gap: 12px; }
+
 @media (min-width: 480px) {
+  .mirror { margin: 0 16px; }
+  .wall-labels { padding: 12px 16px 8px; }
+  .desk { padding: 12px 16px 8px; }
+  .buttons-row { padding: 12px 16px 16px; gap: 16px; }
+  .mirror-gameplay { padding: 24px 20px; gap: 20px; }
+  .mirror-analysis { padding: 20px 24px; gap: 14px; }
+  .action-btn { min-height: 56px; font-size: 14px; }
+  .matrix-cell { padding: 16px 6px; font-size: 15px; }
+  .payoff-matrix { grid-template-columns: 52px 1fr 1fr; gap: 6px; font-size: 11px; }
+}
+
+@media (min-width: 600px) {
   .mirror { margin: 0 24px; }
   .wall-labels { padding: 16px 24px 8px; }
   .desk { padding: 12px 24px 8px; }
   .buttons-row { padding: 12px 24px 24px; }
-  .mirror-gameplay { padding: 40px; }
+  .mirror-gameplay { padding: 32px; gap: 24px; }
+  .mirror-analysis { padding: 24px 32px; }
   .action-btn { min-height: 60px; font-size: 15px; }
+  .matrix-cell { padding: 20px 8px; font-size: 16px; }
 }
 
 @media (min-width: 720px) {
