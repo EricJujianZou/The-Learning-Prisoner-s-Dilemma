@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { snappySpring } from '../config/animations.js';
 import { OPPONENTS } from '../game/opponents.js';
 import { CHARACTERS, SFX } from '../config/characters.js';
 import { GAME_CONFIG } from '../config.js';
@@ -59,8 +60,6 @@ export default function GameRoom({
   const [playPhaseShift] = useSafeSound(SFX.phaseShift);
 
   // ── Intro voiceline via HTMLAudioElement ──────────────────────────────────
-  // use-sound destroys its Howl on component unmount, cutting audio mid-sentence.
-  // HTMLAudioElement persists independently of React's lifecycle.
   const introAudioRef = useRef(null);
 
   useEffect(() => {
@@ -133,12 +132,10 @@ export default function GameRoom({
   function triggerMidRoundDialogue(result) {
     const character = isRL ? CHARACTERS.machine : currentOpponent;
     if (!character?.midRound) return;
-    // Never fire two consecutive rounds
     if (lastDialogueRound.current === round - 1) return;
-    // 45% probability gate
     if (Math.random() > 0.45) return;
 
-    const history = roundHistory; // history before this round
+    const history = roundHistory;
     const events = [];
 
     if (result.playerMove === 'C') events.push('onPlayerCooperate');
@@ -151,7 +148,6 @@ export default function GameRoom({
     if (isRL && result.wasExploring === false) events.push('onAgentExploit');
     if (isRL && round === 11) events.push('onPhaseShift');
 
-    // Pick a matching event that has dialogue lines
     for (const event of events) {
       const lines = character.midRound[event];
       if (lines && lines.length > 0) {
@@ -197,10 +193,34 @@ export default function GameRoom({
     ? CHARACTERS.machine.silhouetteStyle
     : currentOpponent?.silhouetteStyle ?? 'rigid';
 
+  // Key changes on each new opponent — re-triggers entrance animations
+  const roomEntranceKey = isRL ? 'rl' : `level-${currentLevelIndex}`;
+
   return (
     <div className={roomClass}>
+      {/* ── Atmosphere veil — fades from black on each new opponent ──────── */}
+      <motion.div
+        key={roomEntranceKey + '-veil'}
+        style={{
+          position: 'fixed',
+          inset: 0,
+          background: 'var(--color-void)',
+          zIndex: 999,
+          pointerEvents: 'none',
+        }}
+        initial={{ opacity: 1 }}
+        animate={{ opacity: 0 }}
+        transition={{ duration: 0.8, ease: [0.25, 0.1, 0.25, 1] }}
+      />
+
       {/* ── Wall Labels ──────────────────────────────────────────────────── */}
-      <div className="wall-labels">
+      <motion.div
+        key={roomEntranceKey + '-labels'}
+        className="wall-labels"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.5, duration: 0.4, ease: [0.25, 0.1, 0.25, 1] }}
+      >
         <div className="flex flex-col gap-0.5">
           <span
             className="font-display font-medium uppercase text-text-secondary"
@@ -222,11 +242,35 @@ export default function GameRoom({
           <div className="flex flex-col items-end gap-0.5">
             <div className="flex items-center gap-2">
               <span className="font-mono text-text-ghost" style={{ fontSize: '10px' }}>YOU</span>
-              <span className="font-mono font-medium text-text-primary" style={{ fontSize: '16px' }}>{playerScore}</span>
+              <AnimatePresence mode="popLayout">
+                <motion.span
+                  key={playerScore}
+                  className="font-mono font-medium text-text-primary"
+                  style={{ fontSize: '16px', display: 'inline-block' }}
+                  initial={{ opacity: 0, y: 10, scale: 0.9 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: -10, scale: 0.9 }}
+                  transition={{ type: 'spring', stiffness: 300, damping: 25 }}
+                >
+                  {playerScore}
+                </motion.span>
+              </AnimatePresence>
             </div>
             <div className="flex items-center gap-2">
               <span className="font-mono text-text-ghost" style={{ fontSize: '10px' }}>THEM</span>
-              <span className="font-mono font-medium text-text-secondary" style={{ fontSize: '16px' }}>{opponentScore}</span>
+              <AnimatePresence mode="popLayout">
+                <motion.span
+                  key={opponentScore}
+                  className="font-mono font-medium text-text-secondary"
+                  style={{ fontSize: '16px', display: 'inline-block' }}
+                  initial={{ opacity: 0, y: 10, scale: 0.9 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: -10, scale: 0.9 }}
+                  transition={{ type: 'spring', stiffness: 300, damping: 25 }}
+                >
+                  {opponentScore}
+                </motion.span>
+              </AnimatePresence>
             </div>
           </div>
           <div className="flex flex-col items-center">
@@ -234,79 +278,135 @@ export default function GameRoom({
             <span className="font-mono text-text-ghost" style={{ fontSize: '10px' }}>/ {maxRounds}</span>
           </div>
         </div>
-      </div>
+      </motion.div>
 
-      {/* ── Mirror ───────────────────────────────────────────────────────── */}
-      <div className={`mirror ${isRL ? 'mirror--rl' : ''} ${isRL && phase2Active ? 'mirror--phase2' : ''}`}>
-        <AnimatePresence mode="wait">
-          {isAnalysis ? (
-            <motion.div
-              key="analysis"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.4, ease: [0.25, 0.1, 0.25, 1] }}
-              style={{ height: '100%' }}
-            >
-              <PostLevel
-                analysisData={analysisData}
-                onRetry={onRetry}
-                onNextLevel={onNextLevel}
-              />
-            </motion.div>
-          ) : showIntro ? (
-            <motion.div
-              key="intro"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.4, ease: [0.25, 0.1, 0.25, 1] }}
-              className="mirror-intro"
-              onClick={skipIntro}
-              style={{ cursor: 'pointer' }}
-            >
-              <CharacterSilhouette pose={silhouettePose} />
-              <Narrator text={introText} />
-              <div className="font-mono text-text-ghost" style={{ fontSize: '10px', marginTop: '16px', textAlign: 'center', letterSpacing: '0.06em' }}>
-                click anywhere to continue
-              </div>
-            </motion.div>
-          ) : (
-            <motion.div
-              key="gameplay"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.4, ease: [0.25, 0.1, 0.25, 1] }}
-              className="mirror-gameplay"
-            >
-              <PayoffMatrix />
-              {/* Anticipation overlay */}
-              {awaitingResult && (
-                <div className="anticipation-overlay">
-                  <div className="anticipation-dots">
-                    <span /><span /><span />
-                  </div>
-                  <div className="anticipation-label">They're choosing...</div>
+      {/* ── Mirror — scales in from 0.98 ─────────────────────────────────── */}
+      <motion.div
+        key={roomEntranceKey + '-mirror'}
+        initial={{ opacity: 0, scale: 0.98 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ delay: 0.3, duration: 0.5, ease: [0.25, 0.1, 0.25, 1] }}
+        style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }}
+      >
+        <div className={`mirror ${isRL ? 'mirror--rl' : ''} ${isRL && phase2Active ? 'mirror--phase2' : ''}`}>
+          <AnimatePresence mode="wait">
+            {isAnalysis ? (
+              <motion.div
+                key="analysis"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.4, ease: [0.25, 0.1, 0.25, 1] }}
+                style={{ height: '100%' }}
+              >
+                <PostLevel
+                  analysisData={analysisData}
+                  onRetry={onRetry}
+                  onNextLevel={onNextLevel}
+                />
+              </motion.div>
+            ) : showIntro ? (
+              <motion.div
+                key="intro"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.4, ease: [0.25, 0.1, 0.25, 1] }}
+                className="mirror-intro"
+                onClick={skipIntro}
+                style={{ cursor: 'pointer', position: 'relative' }}
+              >
+                {/* Glass fog — clears to reveal silhouette */}
+                <motion.div
+                  style={{
+                    position: 'absolute',
+                    inset: 0,
+                    background: 'rgba(8, 12, 28, 0.88)',
+                    zIndex: 1,
+                    pointerEvents: 'none',
+                    borderRadius: 'inherit',
+                  }}
+                  initial={{ opacity: 1 }}
+                  animate={{ opacity: 0.12 }}
+                  transition={{ duration: 0.6, ease: [0.25, 0.1, 0.25, 1] }}
+                />
+
+                {/* Silhouette — scales in as fog clears */}
+                <motion.div
+                  style={{ position: 'relative', zIndex: 2 }}
+                  initial={{ scale: 0.97 }}
+                  animate={{ scale: 1 }}
+                  transition={{ duration: 0.6, ease: [0.25, 0.1, 0.25, 1] }}
+                >
+                  <CharacterSilhouette pose={silhouettePose} />
+                </motion.div>
+
+                {/* Narrator — appears 400ms after silhouette visible */}
+                <motion.div
+                  style={{ position: 'relative', zIndex: 2 }}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.4, duration: 0.3, ease: [0.25, 0.1, 0.25, 1] }}
+                >
+                  <Narrator text={introText} />
+                </motion.div>
+
+                <div
+                  className="font-mono text-text-ghost"
+                  style={{ fontSize: '10px', marginTop: '16px', textAlign: 'center', letterSpacing: '0.06em', position: 'relative', zIndex: 2 }}
+                >
+                  click anywhere to continue
                 </div>
-              )}
-              {/* Round result overlay — dialogue shown inside */}
-              {roundResult && <RoundResultDisplay result={roundResult} dialogue={midRoundDialogue} />}
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
+              </motion.div>
+            ) : (
+              <motion.div
+                key="gameplay"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0, transition: { delay: 0.3, duration: 0.1 } }}
+                transition={{ duration: 0.4, ease: [0.25, 0.1, 0.25, 1] }}
+                className="mirror-gameplay"
+              >
+                <PayoffMatrix />
+                {/* Anticipation overlay */}
+                {awaitingResult && (
+                  <div className="anticipation-overlay">
+                    <div className="anticipation-dots">
+                      <span /><span /><span />
+                    </div>
+                    <div className="anticipation-label">They're choosing...</div>
+                  </div>
+                )}
+                {/* Round result overlay */}
+                {roundResult && <RoundResultDisplay result={roundResult} dialogue={midRoundDialogue} />}
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+      </motion.div>
 
       {/* ── Desk + History ────────────────────────────────────────────────── */}
-      <div className="desk">
+      <motion.div
+        key={roomEntranceKey + '-desk'}
+        className="desk"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.7, duration: 0.4, ease: [0.25, 0.1, 0.25, 1] }}
+      >
         <RoundHistory history={roundHistory} totalRounds={maxRounds} />
-      </div>
+      </motion.div>
 
       {/* ── Action Buttons ────────────────────────────────────────────────── */}
-      <div className="buttons-row">
+      <motion.div
+        key={roomEntranceKey + '-buttons'}
+        className="buttons-row"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.7, duration: 0.4, ease: [0.25, 0.1, 0.25, 1] }}
+      >
         <ActionButton action="cooperate" onPress={() => handleMove('C')} disabled={buttonsDisabled} />
         <ActionButton action="defect"    onPress={() => handleMove('D')} disabled={buttonsDisabled} />
-      </div>
+      </motion.div>
     </div>
   );
 }
@@ -317,39 +417,75 @@ function RoundResultDisplay({ result, dialogue }) {
   const moveColor = (m) => (m === 'C' ? 'var(--color-cooperate)' : 'var(--color-defect)');
   const moveName  = (m) => (m === 'C' ? 'COOPERATE' : 'DEFECT');
 
+  // Typewriter for mid-round dialogue at 25ms/char
+  const [typedChars, setTypedChars] = useState(0);
+  useEffect(() => {
+    if (!dialogue) { setTypedChars(0); return; }
+    setTypedChars(0);
+    const id = setInterval(() => {
+      setTypedChars((prev) => {
+        if (prev >= dialogue.length) { clearInterval(id); return prev; }
+        return prev + 1;
+      });
+    }, 25);
+    return () => clearInterval(id);
+  }, [dialogue]);
+
   return (
     <div className="round-result">
-      <div className="result-row result-stagger-0">
+      {/* Your move — slides in from left */}
+      <motion.div
+        className="result-row"
+        initial={{ opacity: 0, x: -20, scale: 0.85 }}
+        animate={{ opacity: 1, x: 0, scale: 1 }}
+        transition={{ ...snappySpring }}
+      >
         <span className="font-mono text-text-ghost" style={{ fontSize: '11px', width: '40px', textAlign: 'right' }}>YOU</span>
         <span className="font-display font-medium uppercase" style={{ fontSize: '14px', letterSpacing: '0.06em', color: moveColor(playerMove) }}>
           {moveName(playerMove)}
         </span>
         <span className="font-mono font-medium" style={{ fontSize: '18px', color: 'var(--color-text-primary)' }}>+{playerReward}</span>
-      </div>
+      </motion.div>
 
-      <div className="result-row result-stagger-1">
+      {/* Their move — slides in from right, 180ms later */}
+      <motion.div
+        className="result-row"
+        initial={{ opacity: 0, x: 20, scale: 0.85 }}
+        animate={{ opacity: 1, x: 0, scale: 1 }}
+        transition={{ ...snappySpring, delay: 0.18 }}
+      >
         <span className="font-mono text-text-ghost" style={{ fontSize: '11px', width: '40px', textAlign: 'right' }}>THEM</span>
         <span className="font-display font-medium uppercase" style={{ fontSize: '14px', letterSpacing: '0.06em', color: moveColor(opponentMove) }}>
           {moveName(opponentMove)}
         </span>
         <span className="font-mono font-medium text-text-secondary" style={{ fontSize: '18px' }}>+{opponentReward}</span>
-      </div>
+      </motion.div>
 
-      {dialogue && (
-        <div
-          className="font-mono italic"
-          style={{
-            fontSize: '12px',
-            color: 'var(--color-chungus)',
-            marginTop: '12px',
-            lineHeight: 1.5,
-            opacity: 0.9,
-            animation: 'fadeIn 0.4s ease-out',
-          }}
-        >
-          &ldquo;{dialogue}&rdquo;
-        </div>
-      )}
+      {/* Mid-round dialogue — gold line extends, then typewriter text */}
+      <AnimatePresence>
+        {dialogue && (
+          <motion.div
+            key={dialogue}
+            initial={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            style={{ marginTop: '12px' }}
+          >
+            <motion.div
+              initial={{ width: 0 }}
+              animate={{ width: '60%' }}
+              transition={{ duration: 0.2, ease: 'easeOut' }}
+              style={{ height: '1px', background: 'var(--color-chungus)', margin: '0 auto 8px' }}
+            />
+            <div
+              className="font-mono italic"
+              style={{ fontSize: '12px', color: 'var(--color-chungus)', textAlign: 'center', lineHeight: 1.5 }}
+            >
+              &ldquo;{dialogue.slice(0, typedChars)}&rdquo;
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

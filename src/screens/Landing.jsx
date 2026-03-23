@@ -281,7 +281,7 @@ export default function Landing({ onStart }) {
                 onHoverStart={(e) => { if (!doorAnimating) e.target.style.background = 'rgba(91, 95, 230, 0.16)'; }}
                 onHoverEnd={(e) => { e.target.style.background = 'rgba(91, 95, 230, 0.08)'; }}
               >
-                ENTER
+                ENTER THE INTERROGATION ROOM
               </motion.button>
             </motion.div>
           </motion.div>

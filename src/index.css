@@ -314,8 +314,6 @@ body {
 .action-btn--cooperate:active:not(:disabled) {
   background: var(--color-cooperate);
   color: #07070B;
-  transform: scale(0.97);
-  transition-duration: 100ms;
 }
 
 .action-btn--defect {
@@ -329,12 +327,9 @@ body {
 .action-btn--defect:active:not(:disabled) {
   background: var(--color-defect);
   color: #07070B;
-  transform: scale(0.97);
-  transition-duration: 100ms;
 }
 
 .action-btn:disabled {
-  opacity: 0.3;
   cursor: not-allowed;
 }
 
