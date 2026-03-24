@@ -29,8 +29,8 @@ export default function PayoffMatrix() {
   return (
     <div style={{ width: '100%' }}>
       <motion.div
-        className="text-2xs font-mono uppercase tracking-widest mb-3"
-        style={{ color: 'rgb(254, 254, 254)' }}
+        className="font-mono uppercase tracking-widest mb-3 text-center"
+        style={{ color: 'rgb(254, 254, 254)', fontSize: '13px', letterSpacing: '0.1em' }}
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0, transition: { duration: 0.08 } }}

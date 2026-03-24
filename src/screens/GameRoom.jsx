@@ -31,6 +31,7 @@ export default function GameRoom({
     currentLevelIndex,
     levelOrder,
     phase2Active,
+    levelAttempt,
   } = gameState;
 
   const isRL = phase === 'rlBoss';
@@ -64,7 +65,7 @@ export default function GameRoom({
 
   useEffect(() => {
     if (isAnalysis) return;
-    const key = isRL ? 'rl' : `level-${currentLevelIndex}`;
+    const key = roomEntranceKey;
     if (key === introKey) return;
     setIntroKey(key);
     setShowIntro(true);
@@ -82,7 +83,7 @@ export default function GameRoom({
       return () => clearTimeout(t);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentLevelIndex, isRL, isAnalysis]);
+  }, [currentLevelIndex, isRL, isAnalysis, levelAttempt]);
 
   // ── Round result auto-advance + sound + mid-round dialogue ────────────────
   useEffect(() => {
@@ -116,7 +117,7 @@ export default function GameRoom({
     return () => { if (awaitingTimerRef.current) clearTimeout(awaitingTimerRef.current); };
   }, []);
 
-  // ── 800ms anticipation move handler ──────────────────────────────────────
+  // ── 300ms anticipation move handler ──────────────────────────────────────
   function handleMove(moveValue) {
     if (buttonsDisabled) return;
     if (moveValue === 'C') playCooperate();
@@ -125,7 +126,7 @@ export default function GameRoom({
     awaitingTimerRef.current = setTimeout(() => {
       if (isRL) onMoveRL(moveValue);
       else onMoveStandard(moveValue);
-    }, 800);
+    }, 300);
   }
 
   // ── Mid-round dialogue detection ──────────────────────────────────────────
@@ -193,8 +194,8 @@ export default function GameRoom({
     ? CHARACTERS.machine.silhouetteStyle
     : currentOpponent?.silhouetteStyle ?? 'rigid';
 
-  // Key changes on each new opponent — re-triggers entrance animations
-  const roomEntranceKey = isRL ? 'rl' : `level-${currentLevelIndex}`;
+  // Key changes on each new opponent or retry — re-triggers entrance animations + intro
+  const roomEntranceKey = isRL ? `rl-${levelAttempt}` : `level-${currentLevelIndex}-${levelAttempt}`;
 
   return (
     <div className={roomClass}>

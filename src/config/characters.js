@@ -93,7 +93,7 @@ export const CHARACTERS = {
     strategyName: 'Q-Learning Agent',
     strategyDescription: "Learns your patterns in real time. Phase 1 explores. Phase 2 exploits.",
     silhouetteStyle: 'computing',
-    intro:    { text: "I don't know your strategy yet. You have five rounds before I adapt.", audio: '/sounds/intro_machine.mp3' },
+    intro:    { text: "I don't know your strategy yet. You have ten rounds. I adapt at round six.", audio: '/sounds/intro_machine.mp3' },
     defeated: { text: "I adapted to you. You adapted to my adaptation. Stack overflow.",  audio: '/sounds/defeated_machine.mp3' },
     winThreshold: { type: 'outscore' },
     rounds: 10,

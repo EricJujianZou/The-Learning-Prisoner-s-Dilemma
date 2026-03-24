@@ -52,7 +52,7 @@ export function getPayoffs(playerMove, opponentMove) {
 }
 
 export function checkWin(playerScore, opponentScore, threshold) {
-  if (threshold.type === 'outscore') return playerScore > opponentScore;
+  if (threshold.type === 'outscore') return playerScore >= opponentScore; // tie counts as win
   return playerScore >= threshold.value;
 }
 

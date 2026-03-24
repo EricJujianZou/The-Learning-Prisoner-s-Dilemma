@@ -13,6 +13,7 @@ import { QL_CONFIG, GAME_CONFIG } from './config.js';
 import Landing from './screens/Landing.jsx';
 import GameRoom from './screens/GameRoom.jsx';
 import Leaderboard from './screens/Leaderboard.jsx';
+import Card from './screens/Card.jsx';
 
 // ─── Initial State ──────────────────────────────────────────────────────────
 const BLANK = {
@@ -23,8 +24,12 @@ const BLANK = {
   playerScore: 0,
   opponentScore: 0,
   totalScore: 0,
+  integrityScore: 0,        // +1 per cooperation, -1 per defection (current level)
+  totalIntegrityScore: 0,   // accumulated across completed levels
   roundHistory: [],
+  levelHistories: [],       // [{ opponentId, roundHistory }] for completed levels
   completedLevels: [],
+  levelAttempt: 0,          // increments on retry — triggers intro replay in GameRoom
   // RL boss
   qTable: null,
   epsilon: QL_CONFIG.EPSILON_START,
@@ -68,6 +73,7 @@ function gameReducer(state, action) {
         ...state,
         playerScore: state.playerScore + payoffs.player,
         opponentScore: state.opponentScore + payoffs.opponent,
+        integrityScore: state.integrityScore + (move === 'C' ? 1 : -1),
         roundHistory: [...state.roundHistory, roundRecord],
         roundResult: roundRecord,
       };
@@ -114,6 +120,7 @@ function gameReducer(state, action) {
         ...state,
         playerScore:    state.playerScore + playerPayoffs.player,
         opponentScore:  state.opponentScore + agentPayoffs.player,
+        integrityScore: state.integrityScore + (move === 'C' ? 1 : -1),
         roundHistory:   [...state.roundHistory, roundRecord],
         qTable:         updatedQTable,
         epsilon:        newEpsilon,
@@ -186,9 +193,11 @@ function gameReducer(state, action) {
         round: 1,
         playerScore: 0,
         opponentScore: 0,
+        integrityScore: 0, // reset integrity for retry (don't accumulate partial run)
         roundHistory: [],
         roundResult: null,
         analysisData: null,
+        levelAttempt: state.levelAttempt + 1, // triggers intro replay in GameRoom
         ...(wasRL && {
           qTable:         initQTable(QL_CONFIG),
           epsilon:        QL_CONFIG.EPSILON_START,
@@ -199,21 +208,28 @@ function gameReducer(state, action) {
       };
     }
 
-    // ── Advance to next level (or leaderboard after RL boss) ───────────────
+    // ── Advance to next level (or card screen after AI boss) ───────────────
     case 'NEXT_LEVEL': {
-      // After RL boss → leaderboard
+      const currentOpponentId = state.currentLevelIndex === 5
+        ? 'machine'
+        : OPPONENTS[state.levelOrder[state.currentLevelIndex]]?.id ?? 'unknown';
+      const newLevelHistory = { opponentId: currentOpponentId, roundHistory: [...state.roundHistory] };
+
+      // After AI boss → card/results screen
       if (state.currentLevelIndex === 5) {
         return {
           ...state,
-          phase: 'leaderboard',
+          phase: 'card',
           totalScore: state.totalScore + state.playerScore,
+          totalIntegrityScore: state.totalIntegrityScore + state.integrityScore,
+          levelHistories: [...state.levelHistories, newLevelHistory],
           analysisData: null,
         };
       }
 
       const nextIndex = state.currentLevelIndex + 1;
 
-      // After level 4 → RL boss
+      // After level 4 → AI boss
       if (nextIndex >= 5) {
         return {
           ...state,
@@ -222,11 +238,15 @@ function gameReducer(state, action) {
           round: 1,
           playerScore: 0,
           opponentScore: 0,
+          integrityScore: 0,
           roundHistory: [],
           roundResult: null,
           analysisData: null,
           totalScore: state.totalScore + state.playerScore,
+          totalIntegrityScore: state.totalIntegrityScore + state.integrityScore,
+          levelHistories: [...state.levelHistories, newLevelHistory],
           completedLevels: [...state.completedLevels, state.currentLevelIndex],
+          levelAttempt: 0,
           qTable:         initQTable(QL_CONFIG),
           epsilon:        QL_CONFIG.EPSILON_START,
           visitedStates:  new Set(),
@@ -242,11 +262,15 @@ function gameReducer(state, action) {
         round: 1,
         playerScore: 0,
         opponentScore: 0,
+        integrityScore: 0,
         roundHistory: [],
         roundResult: null,
         analysisData: null,
         totalScore: state.totalScore + state.playerScore,
+        totalIntegrityScore: state.totalIntegrityScore + state.integrityScore,
+        levelHistories: [...state.levelHistories, newLevelHistory],
         completedLevels: [...state.completedLevels, state.currentLevelIndex],
+        levelAttempt: 0,
       };
     }
 
@@ -296,10 +320,24 @@ export default function App() {
     );
   }
 
+  if (phase === 'card') {
+    return (
+      <div style={screenStyle}>
+        <Card
+          totalScore={gameState.totalScore}
+          totalIntegrityScore={gameState.totalIntegrityScore}
+          levelHistories={gameState.levelHistories}
+          onPlayAgain={reset}
+        />
+      </div>
+    );
+  }
+
+  // Keep leaderboard phase as fallback (shouldn't be reached in normal flow)
   if (phase === 'leaderboard') {
     return (
       <div style={screenStyle}>
-        <Leaderboard totalScore={gameState.totalScore} onPlayAgain={reset} />
+        <Leaderboard playerName="" onPlayAgain={reset} />
       </div>
     );
   }
