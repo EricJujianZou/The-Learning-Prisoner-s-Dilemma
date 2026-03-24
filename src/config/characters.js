@@ -4,7 +4,7 @@
 export const CHARACTERS = {
   pushover: {
     id: 'pushover',
-    displayName: 'The Villain',
+    displayName: 'Friendly Neighbourhood Girl',
     strategyName: 'Always Cooperate',
     strategyDescription: 'Cooperates every single round, no matter what you do.',
     silhouetteStyle: 'slouched',
@@ -21,7 +21,7 @@ export const CHARACTERS = {
 
   wall: {
     id: 'wall',
-    displayName: 'Framemogging Gigachad',
+    displayName: 'Mafia Boss',
     strategyName: 'Always Defect',
     strategyDescription: "Defects every round. It made up its mind before you sat down.",
     silhouetteStyle: 'rigid',
@@ -38,7 +38,7 @@ export const CHARACTERS = {
 
   mirror: {
     id: 'mirror',
-    displayName: 'The Believer',
+    displayName: 'The Mirrorer',
     strategyName: 'Tit for Tat',
     strategyDescription: 'Starts by cooperating. Then copies your previous move exactly.',
     silhouetteStyle: 'mirrored',
@@ -55,7 +55,7 @@ export const CHARACTERS = {
 
   grudge: {
     id: 'grudge',
-    displayName: 'The Philanthropist',
+    displayName: 'Envy',
     strategyName: 'Grim Trigger',
     strategyDescription: 'Cooperates until you defect once. After that, defects forever.',
     silhouetteStyle: 'still',
@@ -89,7 +89,7 @@ export const CHARACTERS = {
 
   machine: {
     id: 'machine',
-    displayName: 'The Learner [BOSS]',
+    displayName: 'The Q-Learning Agent [BOSS]',
     strategyName: 'Q-Learning Agent',
     strategyDescription: "Learns your patterns in real time. Phase 1 explores. Phase 2 exploits.",
     silhouetteStyle: 'computing',
