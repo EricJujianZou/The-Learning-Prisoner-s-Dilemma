@@ -109,8 +109,8 @@ export default function Landing({ onStart }) {
               {howItWorksOpen && (
                 <ol style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '10px' }}>
                   {[
-                    'Face 5 opponents, then 1 self-learning RL boss',
-                    'Each round: both players pick Cooperate or Defect simultaneously.',
+                    'Face 5 opponents, then 1 self-learning AI boss',
+                    'Each round: both you and the opponent pick Cooperate or Defect simultaneously.',
                     'Points follow the payoff matrix. Neither player sees the other\'s choice first.',
                     'Beat each opponent\'s score threshold to advance.',
                   ].map((line, i) => (
@@ -152,7 +152,7 @@ export default function Landing({ onStart }) {
                 className="font-mono text-text-secondary"
                 style={{ fontSize: '11px', lineHeight: 1.6, margin: 0 }}
               >
-                Beat all 5 opponents and the final boss. Your cumulative score across all rounds determines your leaderboard rank.
+                Beat all 5 opponents and the final boss. Your cumulative score across all rounds determines your leaderboard rank. But, is it worth sacrificing morality for score?
               </p>
 
               {/* Divider */}
@@ -377,7 +377,7 @@ export default function Landing({ onStart }) {
                   animate: { opacity: 1, y: 0, transition: { ...softTween } },
                 }}
               >
-                Beat all 6 to make the leaderboard.
+                Beat the game to see your game score and integrity score
               </motion.p>
 
               {/* Chungus intro */}
@@ -390,7 +390,7 @@ export default function Landing({ onStart }) {
                 }}
               >
                 <p className="font-mono italic text-chungus" style={{ fontWeight: 300, fontSize: '14px', lineHeight: 1.6 }}>
-                  &ldquo;Figure it out. Don't overthink.&rdquo;
+                  &ldquo;Are you willing to lie, betray, and defect for the leaderboard?&rdquo;
                 </p>
               </motion.div>
 
@@ -475,6 +475,12 @@ export default function Landing({ onStart }) {
               <div className="text-2xs font-mono text-text-secondary uppercase tracking-widest mb-3">
                 Leaderboard
               </div>
+              <div className="flex items-center gap-3 font-mono pb-1.5 mb-1" style={{ borderBottom: '1px solid var(--color-border-light)' }}>
+                <span className="w-4 flex-shrink-0" />
+                <span className="flex-1" />
+                <span style={{ fontSize: '10px', letterSpacing: '0.08em', color: 'var(--color-text-ghost)', textTransform: 'uppercase' }}>Points</span>
+                <span style={{ fontSize: '10px', letterSpacing: '0.08em', color: 'var(--color-text-ghost)', minWidth: '32px', textAlign: 'right', textTransform: 'uppercase' }}>Morality</span>
+              </div>
               {entries.length === 0 ? (
                 <p className="font-mono text-text-secondary" style={{ fontSize: '11px', lineHeight: 1.5 }}>
                   No entries yet.
@@ -489,6 +495,19 @@ export default function Landing({ onStart }) {
                     <span className="text-text-secondary w-4 text-right flex-shrink-0">{i + 1}</span>
                     <span className="text-text-secondary flex-1 truncate">{entry.name}</span>
                     <span className="text-text-primary font-medium">{entry.score}</span>
+                    <span style={{
+                      fontSize: '11px',
+                      fontWeight: 500,
+                      minWidth: '32px',
+                      textAlign: 'right',
+                      color: (entry.integrityScore ?? 0) > 0
+                        ? 'var(--color-cooperate)'
+                        : (entry.integrityScore ?? 0) < 0
+                        ? 'var(--color-defect)'
+                        : 'var(--color-text-ghost)',
+                    }}>
+                      {(entry.integrityScore ?? 0) >= 0 ? `+${entry.integrityScore ?? 0}` : entry.integrityScore}
+                    </span>
                   </div>
                 ))
               )}

@@ -19,6 +19,10 @@ export default function GameRoom({
   onAdvanceRound,
   onRetry,
   onNextLevel,
+  muted,
+  onToggleMute,
+  devSpeed,
+  onToggleDevSpeed,
 }) {
   const {
     phase,
@@ -33,6 +37,8 @@ export default function GameRoom({
     phase2Active,
     levelAttempt,
   } = gameState;
+
+  const speedMult = devSpeed ? 0.5 : 1;
 
   const isRL = phase === 'rlBoss';
   const isAnalysis = phase === 'postLevel';
@@ -79,7 +85,7 @@ export default function GameRoom({
       introAudioRef.current = aud;
       return () => { aud.onended = null; aud.pause(); aud.src = ''; };
     } else {
-      const t = setTimeout(() => setShowIntro(false), GAME_CONFIG.INTRO_DISPLAY_MS);
+      const t = setTimeout(() => setShowIntro(false), GAME_CONFIG.INTRO_DISPLAY_MS * speedMult);
       return () => clearTimeout(t);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -94,7 +100,7 @@ export default function GameRoom({
     const t = setTimeout(() => {
       setMidRoundDialogue(null);
       onAdvanceRound();
-    }, GAME_CONFIG.RESULT_DISPLAY_MS);
+    }, GAME_CONFIG.RESULT_DISPLAY_MS * speedMult);
     return () => clearTimeout(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [roundResult]);
@@ -126,7 +132,7 @@ export default function GameRoom({
     awaitingTimerRef.current = setTimeout(() => {
       if (isRL) onMoveRL(moveValue);
       else onMoveStandard(moveValue);
-    }, 300);
+    }, 300 * speedMult);
   }
 
   // ── Mid-round dialogue detection ──────────────────────────────────────────
@@ -280,6 +286,54 @@ export default function GameRoom({
             <span className="font-mono font-medium text-text-primary" style={{ fontSize: '18px' }}>{round} / {maxRounds}</span>
             <span className="font-mono text-text-primary" style={{ fontSize: '10px' }}>turns</span>
           </div>
+          <button
+            onClick={onToggleDevSpeed}
+            title={devSpeed ? 'Normal speed' : '2× speed'}
+            style={{
+              background: devSpeed ? 'rgba(255, 255, 255, 0.15)' : 'none',
+              border: devSpeed ? '1px solid var(--color-accent)' : '1px solid transparent',
+              cursor: 'pointer',
+              padding: '2px 6px',
+              borderRadius: '3px',
+              color: devSpeed ? 'var(--color-accent-bright)' : 'var(--color-text-ghost)',
+              fontFamily: "'IBM Plex Mono', monospace",
+              fontSize: '20px',
+              fontWeight: 500,
+              letterSpacing: '0.04em',
+              transition: 'color 0.2s, background 0.2s, border-color 0.2s',
+            }}
+          >
+            2×
+          </button>
+          <button
+            onClick={onToggleMute}
+            title={muted ? 'Unmute music' : 'Mute music'}
+            style={{
+              background: 'none',
+              border: 'none',
+              cursor: 'pointer',
+              padding: '4px',
+              color: muted ? 'var(--color-text-ghost)' : 'var(--color-text-secondary)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              transition: 'color 0.2s',
+            }}
+          >
+            {muted ? (
+              <svg width="30" height="30" viewBox="0 0 16 16" fill="currentColor">
+                <path d="M2 5.5h2.5L8 2.5v11L4.5 10.5H2v-5z"/>
+                <line x1="11" y1="5" x2="15" y2="11" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+                <line x1="15" y1="5" x2="11" y2="11" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+              </svg>
+            ) : (
+              <svg width="30" height="30" viewBox="0 0 16 16" fill="currentColor">
+                <path d="M2 5.5h2.5L8 2.5v11L4.5 10.5H2v-5z"/>
+                <path d="M10 5.5c1.1.8 1.8 2 1.8 2.5s-.7 1.7-1.8 2.5" stroke="currentColor" strokeWidth="1.5" fill="none" strokeLinecap="round"/>
+                <path d="M11.5 3.5c2 1.4 3 3 3 4.5s-1 3.1-3 4.5" stroke="currentColor" strokeWidth="1.5" fill="none" strokeLinecap="round"/>
+              </svg>
+            )}
+          </button>
         </div>
       </motion.div>
 

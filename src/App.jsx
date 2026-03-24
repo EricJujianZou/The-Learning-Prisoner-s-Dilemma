@@ -14,6 +14,7 @@ import Landing from './screens/Landing.jsx';
 import GameRoom from './screens/GameRoom.jsx';
 import Leaderboard from './screens/Leaderboard.jsx';
 import Card from './screens/Card.jsx';
+import { useMusic } from './hooks/useMusic.js';
 
 // ─── Initial State ──────────────────────────────────────────────────────────
 const BLANK = {
@@ -286,6 +287,8 @@ function gameReducer(state, action) {
 export default function App() {
   const [gameState, dispatch] = useReducer(gameReducer, BLANK);
   const [visible, setVisible] = useState(true);
+  const [muted, setMuted] = useState(false);
+  const [devSpeed, setDevSpeed] = useState(false);
 
   const startGame    = useCallback(() => dispatch({ type: 'START_GAME' }), []);
   const moveStandard = useCallback((move) => dispatch({ type: 'PLAYER_MOVE_STANDARD', move }), []);
@@ -293,9 +296,16 @@ export default function App() {
   const advanceRound = useCallback(() => dispatch({ type: 'ADVANCE_ROUND' }), []);
   const retry        = useCallback(() => dispatch({ type: 'RETRY_LEVEL' }), []);
   const nextLevel    = useCallback(() => dispatch({ type: 'NEXT_LEVEL' }), []);
-  const reset        = useCallback(() => dispatch({ type: 'RESET' }), []);
+  const reset        = useCallback(() => { dispatch({ type: 'RESET' }); setDevSpeed(false); }, []);
 
   const { phase } = gameState;
+
+  // Derive music track from current phase
+  const musicTrack = phase === 'rlBoss' && gameState.phase2Active ? 'rlPhase2'
+    : phase === 'rlBoss' ? 'rlBoss'
+    : (phase === 'playing' || phase === 'postLevel' || phase === 'landing' || phase === 'card') ? phase
+    : null;
+  useMusic(musicTrack, muted);
 
   // Screen fade transition
   useEffect(() => {
@@ -352,6 +362,10 @@ export default function App() {
         onAdvanceRound={advanceRound}
         onRetry={retry}
         onNextLevel={nextLevel}
+        muted={muted}
+        onToggleMute={() => setMuted((m) => !m)}
+        devSpeed={devSpeed}
+        onToggleDevSpeed={() => setDevSpeed((v) => !v)}
       />
     </div>
   );
